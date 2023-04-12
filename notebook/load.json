@@ -1,0 +1,143 @@
+{
+	"name": "load",
+	"properties": {
+		"folder": {
+			"name": "edw"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool2023",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "351ba4b4-7baa-48bc-a519-0bcbcc71501c"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
+				"name": "bmsparkpool2023",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"%run common/neo_connector"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import sys\r\n",
+					"import tempfile\r\n",
+					"import os\r\n",
+					"\r\n",
+					"from ce_pipelines import DataLakeAdapter\r\n",
+					"from ce_pipelines import GraphAdapter\r\n",
+					"from ce_pipelines.edw import config,logger\r\n",
+					"from ce_pipelines import Archive\r\n",
+					"\r\n",
+					"from .queries import QuerySelector\r\n",
+					"\r\n",
+					"\r\n",
+					"def execute(entities=['customers_inc',\r\n",
+					"    'vendors_inc',\r\n",
+					"    'employee_inc',\r\n",
+					"    'employee_account_assignment_inc',\r\n",
+					"    'employee_job_inc',\r\n",
+					"    'employee_phone_inc',\r\n",
+					"    'employee_competency_hierarchy_inc',\r\n",
+					"    'employee_competency_assessment_inc',\r\n",
+					"    'employee_badge_request_inc',\r\n",
+					"    'employee_badge_request_attributes_inc'], **kwargs):\r\n",
+					"    '''\r\n",
+					"    entities=['customers_inc',\r\n",
+					"    'vendors_inc',\r\n",
+					"    'employee_inc',\r\n",
+					"    'employee_account_assignment_inc',\r\n",
+					"    'employee_job_inc',\r\n",
+					"    'employee_phone_inc',\r\n",
+					"    'employee_competency_hierarchy_inc',\r\n",
+					"    'employee_competency_assessment_inc',\r\n",
+					"    'employee_badge_request_inc',\r\n",
+					"    'employee_badge_request_attributes_inc'\r\n",
+					"    '''\r\n",
+					"    # Update Default Config - Optional\r\n",
+					"    config.update(kwargs)\r\n",
+					"    \r\n",
+					"    graph = GraphAdapter(config=config, logger=logger)\r\n",
+					"    data_lake_conn = DataLakeAdapter(config=config, logger=logger)\r\n",
+					"\r\n",
+					"    for entity in entities:\r\n",
+					"        \r\n",
+					"        try:\r\n",
+					"            logger.info(f\"Load - {entity} - Started.\")\r\n",
+					"            remote_files = data_lake_conn.get_files(env='landing', entity=entity) \r\n",
+					"            for remote_file in remote_files:\r\n",
+					"                sas_url = data_lake_conn.generate_sas_url(remote_file)\r\n",
+					"                if sas_url:\r\n",
+					"                    query = QuerySelector(config=config, logger=logger).build_query(entity, sas_url)\r\n",
+					"                    if query:    \r\n",
+					"                        graph.execute_query(query)\r\n",
+					"                    \r\n",
+					"            logger.info(f\"Load - {entity} - Completed.\")\r\n",
+					"        except Exception as e:\r\n",
+					"            logger.error(str(e))\r\n",
+					"            logger.info(f\"Load - {entity} - Failed.\")\r\n",
+					"\r\n",
+					"    graph.close()\r\n",
+					"\r\n",
+					"    # Running Archive module\r\n",
+					"    archive_obj = Archive(config, entity=config.get(\"source_flag\"))\r\n",
+					"    archive_obj.move_folder()"
+				]
+			}
+		]
+	}
+}

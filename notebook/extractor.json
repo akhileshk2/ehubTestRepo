@@ -1,0 +1,121 @@
+{
+	"name": "extractor",
+	"properties": {
+		"folder": {
+			"name": "ce_pipelines/crunchbase/extraction_operator/organizations"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool2023",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "c24da44c-bf53-4708-854a-a0444f70f676"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
+				"name": "bmsparkpool2023",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import os\r\n",
+					"import pandas as pd \r\n",
+					"from datetime import datetime, timedelta \r\n",
+					"import io\r\n",
+					"\r\n",
+					"class OrganizationsDataExtractor:\r\n",
+					"\r\n",
+					"    entity = \"organizations\"\r\n",
+					"    \r\n",
+					"    def __init__(self, staging, config, logger):\r\n",
+					"        self._config = config\r\n",
+					"        self._logger = logger\r\n",
+					"        self._staging = staging\r\n",
+					"        self._data = {\r\n",
+					"            \"organizations_inc\": pd.DataFrame(),\r\n",
+					"            \"organizations_geo_inc\": pd.DataFrame()\r\n",
+					"        }\r\n",
+					"    \r\n",
+					"    def _upload(self):\r\n",
+					"        for output_entity, df in self._data.items():\r\n",
+					"            if not df.empty:\r\n",
+					"                data = io.StringIO()\r\n",
+					"                df.to_csv(data, index=False)\r\n",
+					"                self._staging.upload_file(f'{output_entity}.csv', data, 'staging')\r\n",
+					"                data.close()\r\n",
+					"\r\n",
+					"    def extract(self, dir_path:str):\r\n",
+					"        \r\n",
+					"        from_date = self._config.get('start_date', (datetime.now() - timedelta(days=1)).strftime(self._config['datetime_format']))\r\n",
+					"        to_date = self._config.get('end_date', None)\r\n",
+					"\r\n",
+					"        file_path = os.path.join(dir_path, f\"{self.entity}.csv\")\r\n",
+					"        \r\n",
+					"        filtered_chunks = []\r\n",
+					"        data_chunks = pd.read_csv(file_path, chunksize=10000)\r\n",
+					"        for data_chunk in data_chunks:\r\n",
+					"            data_chunk['updated_at'] = pd.to_datetime(data_chunk['updated_at'], format=self._config['datetime_format'])\r\n",
+					"            if to_date:\r\n",
+					"                filtered_chunks.append(data_chunk[(data_chunk['updated_at'] >= from_date) & (data_chunk['updated_at'] < to_date)])\r\n",
+					"            else:\r\n",
+					"                filtered_chunks.append(data_chunk[(data_chunk['updated_at'] >= from_date)])\r\n",
+					"\r\n",
+					"        ids = set()\r\n",
+					"        if filtered_chunks:\r\n",
+					"            self._data['organizations_inc'] = pd.concat(filtered_chunks, ignore_index=True)\r\n",
+					"            self._extract_geo()\r\n",
+					"            self._upload()\r\n",
+					"            ids = set(self._data['organizations_inc']['uuid'])\r\n",
+					"\r\n",
+					"        self._logger.info(f'{len(ids)} records extracted and staged from entity - {self.entity}')\r\n",
+					"        return ids\r\n",
+					"    \r\n",
+					"    def _extract_geo(self):\r\n",
+					"        self._data['organizations_geo_inc'] = self._data['organizations_inc'][['country_code','region','city', 'uuid']].dropna(how='any', subset=['country_code']).groupby(['country_code','region','city'])['uuid'].apply(lambda x: ','.join(list(x))).reset_index(name='uuid')\r\n",
+					"        self._data['organizations_inc'].drop(columns=['country_code','region','city'], inplace=True)        "
+				]
+			}
+		]
+	}
+}

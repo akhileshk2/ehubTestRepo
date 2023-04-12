@@ -1,0 +1,151 @@
+{
+	"name": "neo_connector",
+	"properties": {
+		"folder": {
+			"name": "ce_pipelines/common"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool2023",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "e30944c9-7a1d-4f41-b2c6-8377854f71e9"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
+				"name": "bmsparkpool2023",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"pip install neo4j"
+				],
+				"execution_count": 25
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from neo4j import GraphDatabase\r\n",
+					"import os\r\n",
+					"import time\r\n",
+					"\r\n",
+					"class GraphAdapter:\r\n",
+					"    def __init__(self, config, logger):\r\n",
+					"        self._config = config\r\n",
+					"        self._logger = logger\r\n",
+					"        self._connector = GraphDatabase.driver(self._config['neo4j.bolt_url'], auth=(self._config['neo4j.user_name'], self._config['neo4j.password']),encrypted=False)\r\n",
+					"\r\n",
+					"    def execute_query(self, query):\r\n",
+					"        connector = None\r\n",
+					"        try:\r\n",
+					"            self._logger.info(f\"Query execution initiated.\")\r\n",
+					"            start = time.time()\r\n",
+					"            with self._connector.session(database=self._config['neo4j.database']) as session:\r\n",
+					"                res = session.write_transaction(self._execute_txn, query)\r\n",
+					"            end = time.time()\r\n",
+					"            self._logger.info(f\"Query execution completed. Execution Time - {end - start} seconds.\")\r\n",
+					"            return res\r\n",
+					"        except Exception as e:\r\n",
+					"            self._logger.error(f\"Query Execution Failed - {e}\")\r\n",
+					"\r\n",
+					"        \r\n",
+					"    def _execute_txn(self, tx, query):\r\n",
+					"        res = tx.run(query)\r\n",
+					"        values = []\r\n",
+					"        for record in res:\r\n",
+					"            values.append(dict(record))\r\n",
+					"        return values\r\n",
+					"\r\n",
+					"\r\n",
+					"    def execute_update_query(self, query, **kwargs):\r\n",
+					"        connector = None\r\n",
+					"        try:\r\n",
+					"            with self._connector.session(database=self._config['neo4j.database']) as session:\r\n",
+					"                res = session.write_transaction(self._execute_arg_txn, query, kwargs)\r\n",
+					"            return res\r\n",
+					"        except Exception as e:\r\n",
+					"            raise e\r\n",
+					"\r\n",
+					"    def execute_read_query(self, query, **kwargs):\r\n",
+					"        connector = None\r\n",
+					"        try:\r\n",
+					"            with self._connector.session(database=self._config['neo4j.database']) as session:\r\n",
+					"                res = session.read_transaction(self._execute_arg_txn, query, kwargs)\r\n",
+					"            return res\r\n",
+					"        except Exception as e:\r\n",
+					"            raise e\r\n",
+					"        \r\n",
+					"    def _execute_arg_txn(self, tx, query, data):\r\n",
+					"        res = tx.run(query, data)\r\n",
+					"        values = []\r\n",
+					"        for record in res:\r\n",
+					"            values.append(dict(record))\r\n",
+					"        return values\r\n",
+					"    \r\n",
+					"        \r\n",
+					"    def close(self):\r\n",
+					"        try: \r\n",
+					"            if self._connector:\r\n",
+					"                self._connector.close()\r\n",
+					"        except Exception as e:\r\n",
+					"            self._logger.error(f\"Exception while closing the connection - {e}\")\r\n",
+					"        \r\n",
+					""
+				],
+				"execution_count": 26
+			}
+		]
+	}
+}

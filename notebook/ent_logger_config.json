@@ -1,0 +1,78 @@
+{
+	"name": "ent_logger_config",
+	"properties": {
+		"folder": {
+			"name": "ce_pipelines/ent/config"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool2023",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "88164edf-328d-4345-b30f-53d0440a75f9"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
+				"name": "bmsparkpool2023",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import logging\r\n",
+					"\r\n",
+					"# logger config\r\n",
+					"# log levels: debug, info, warning, error, critical\r\n",
+					"logFormatter = logging.Formatter('%(asctime)s | %(name)s | %(levelname)s | %(message)s',datefmt='%Y-%m-%d %H:%M:%S')\r\n",
+					"logger = logging.getLogger('ENT')\r\n",
+					"logger.setLevel(logging.DEBUG)\r\n",
+					"# stream logger\r\n",
+					"sh = logging.StreamHandler() # stream handler\r\n",
+					"sh.setFormatter(logFormatter)\r\n",
+					"sh.setLevel(logging.INFO)\r\n",
+					"logger.addHandler(sh)"
+				],
+				"execution_count": 6
+			}
+		]
+	}
+}

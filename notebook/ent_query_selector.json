@@ -1,0 +1,81 @@
+{
+	"name": "ent_query_selector",
+	"properties": {
+		"folder": {
+			"name": "ce_pipelines/ent/load_operator/queries"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool2023",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "e794a2f9-5a34-4627-a980-ec4951734cc9"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "python"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
+				"name": "bmsparkpool2023",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import os\r\n",
+					"\r\n",
+					"class QuerySelector:\r\n",
+					"    def __init__(self, config, logger):\r\n",
+					"        self._config = config\r\n",
+					"        self._logger = logger\r\n",
+					"\r\n",
+					"    def build_query(self, entity, sas_url):\r\n",
+					"        query = None\r\n",
+					"        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), f\"{entity}.cql\")) as file:\r\n",
+					"            query_template = file.read()\r\n",
+					"            query = query_template.replace('<<SAS_URL>>', sas_url)\r\n",
+					"        return query  \r\n",
+					"\r\n",
+					""
+				]
+			}
+		]
+	}
+}

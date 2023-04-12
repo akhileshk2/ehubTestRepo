@@ -1,0 +1,130 @@
+{
+	"name": "etl_status_recorder",
+	"properties": {
+		"folder": {
+			"name": "ce_pipelines/common"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool2023",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "8442684f-0cb0-412b-a779-e7003798548c"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
+				"name": "bmsparkpool2023",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"%run neo_connector"
+				],
+				"execution_count": 32
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#from .neo_connector import GraphAdapter\r\n",
+					"\r\n",
+					"class ETLStatusRecorder:\r\n",
+					"    \r\n",
+					"    def __init__(self, config, logger):\r\n",
+					"        self._config = config\r\n",
+					"        self._logger = logger\r\n",
+					"        \r\n",
+					"        self._graph = GraphAdapter(self._config, self._logger)\r\n",
+					"\r\n",
+					"    def update_status(self, status, phase=None):\r\n",
+					"        query = None        \r\n",
+					"        if not phase:\r\n",
+					"            query = '''\r\n",
+					"                WITH \r\n",
+					"\t                $etl_id AS etlId,\r\n",
+					"\t                $status AS status,\r\n",
+					"\t                apoc.date.format(datetime().epochMillis,\"ms\", \"yyyy-MM-dd HH:mm:ss\") AS timeStamp\r\n",
+					"                MERGE (etlC:ETLCore)\r\n",
+					"                MERGE (etlC)-[:HAS_SOURCE]->(etl:ETL{id:etlId})\r\n",
+					"                SET etl.lastExecutionAt = timeStamp\r\n",
+					"                SET etl.lastSuccessfulExecutionAt = CASE status WHEN 'success' THEN timeStamp ELSE etl.lastSuccessfulExecutionAt END\r\n",
+					"            '''\r\n",
+					"            self._graph.execute_update_query(query, etl_id=self._config['source_flag'], status=status)\r\n",
+					"\r\n",
+					"    def _format_date(self, date_time_str):\r\n",
+					"        return date_time_str\r\n",
+					"\r\n",
+					"    def get_last_successful_execution_at(self):\r\n",
+					"        query = '''\r\n",
+					"            WITH $etl_id AS etlId\r\n",
+					"            MATCH (:ETLCore)-[:HAS_SOURCE]->(etl:ETL{id:etlId})\r\n",
+					"            RETURN etl.lastSuccessfulExecutionAt AS last_successful_execution_at\r\n",
+					"        '''\r\n",
+					"        res = self._graph.execute_read_query(query, etl_id=self._config['source_flag'])\r\n",
+					"        if res:\r\n",
+					"            return self._format_date(res[0]['last_successful_execution_at'])\r\n",
+					"        else:\r\n",
+					"            return None\r\n",
+					"\r\n",
+					"    def __del__(self):\r\n",
+					"\r\n",
+					"        if self._graph:\r\n",
+					"            self._graph.close()\r\n",
+					"\r\n",
+					""
+				],
+				"execution_count": 33
+			}
+		]
+	}
+}

@@ -1,0 +1,437 @@
+{
+	"name": "datalake_connector_Copy1",
+	"properties": {
+		"folder": {
+			"name": "ce_pipelines/common"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool2023",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 1,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "1",
+				"spark.dynamicAllocation.maxExecutors": "1",
+				"spark.autotune.trackingId": "fe7b19bc-5d7c-451e-80b4-7ab3fcffd296"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
+				"name": "bmsparkpool2023",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"pip install azure-storage-file-datalake"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from azure.storage.filedatalake import DataLakeServiceClient\r\n",
+					"from azure.storage.blob import generate_account_sas, ResourceTypes, AccountSasPermissions"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import os\r\n",
+					"import tempfile\r\n",
+					"import pandas as pd\r\n",
+					"import io\r\n",
+					"from datetime import datetime, timedelta"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# %run ce_pipelines/common/config"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# print(config[\"storage.account_name\"])\r\n",
+					"# #print(e_config)\r\n",
+					"# cm_config = config\r\n",
+					"# print(cm_config)"
+				],
+				"execution_count": 25
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# %run ce_pipelines/eoy/config/eoy_config"
+				],
+				"execution_count": 26
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# print(config[\"data.chunksize\"])\r\n",
+					"# config.update(cm_config)\r\n",
+					"# print(config)\r\n",
+					"# print(config[\"storage.account_name\"])\r\n",
+					"# print(config[\"storage.lookup_dir\"])"
+				],
+				"execution_count": 27
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from notebookutils import mssparkutils\r\n",
+					"# storageaccountname = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.account_name\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"# print(storageaccountname)\r\n",
+					"# storagecontainername = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.container_name\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"# print(storagecontainername)\r\n",
+					"# storageaccountkey = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.account_key\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"# print(storageaccountkey)"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/eoy/config/eoy_config"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/eoy/config/logger_config"
+				],
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"class DataLakeAdapter:\r\n",
+					"    \r\n",
+					"    def __init__(self, config, logger, env=None, entity=None):\r\n",
+					"        self._config = config\r\n",
+					"        self._logger = logger\r\n",
+					"        # self._storage_credential = \"Wl+cozJ6xDQtnstjWpmHpz/2UGxgaptMpDl1/OMPiLUQS+2fuNdeqMmnvzgCTXTwL7c3oNYjrRvl+AStI26Zaw==\"\r\n",
+					"        # self._storage_container = \"bmfilesystem2023\"\r\n",
+					"        self._storageaccountname = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.account_name\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"        # print(self.storageaccountname)\r\n",
+					"        self._storagecontainername = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.container_name\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"        # print(self.storagecontainername)\r\n",
+					"        self._storageaccountkey = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.account_key\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"        # print(self.storageaccountkey)\r\n",
+					"        # self._storage_url = f\"https//{self._storageaccountname}.blob.core.windows.net\"\r\n",
+					"        self._storage_url = \"https://bmdatalakestorage2023.dfs.core.windows.net\"\r\n",
+					"        self._logger.info(f\"DataLakeAdapter _storage_url : {self._storage_url}\")\r\n",
+					"    #     if env:\r\n",
+					"    #         self._init_directory_structure(env, entity)\r\n",
+					"\r\n",
+					"    # def _init_directory_structure(self, env, entity=None):\r\n",
+					"    #     file_system_client = DataLakeServiceClient(\r\n",
+					"    #         account_url=self._storage_url, \r\n",
+					"    #         credential=self._storage_credential\r\n",
+					"    #     ).get_file_system_client(file_system=self._storage_container)\r\n",
+					"\r\n",
+					"    #     dir_path=self._config[f\"storage.{env}_dir_name\"] + (f\"/{entity}\" if entity else '')\r\n",
+					"\r\n",
+					"    #     try:\r\n",
+					"    #         file_system_client.delete_directory(dir_path)\r\n",
+					"    #     except Exception as e:\r\n",
+					"    #         if 'PathNotFound' in str(e):\r\n",
+					"    #             #self._logger.info(f'Creating new dir {dir_path}')\r\n",
+					"    #             print(\"Creating new dir\")\r\n",
+					"    #         else:\r\n",
+					"    #             print(\"Delete dir\")\r\n",
+					"    #             #self._logger.error(f'Delete dir {dir_path} failed with exception, {e}')\r\n",
+					"    #             #raise e\r\n",
+					"\r\n",
+					"    #     file_system_client.create_directory(dir_path)\r\n",
+					"    #     file_system_client.close()\r\n",
+					"    #     #self._logger.info(f'New dir created {dir_path}')\r\n",
+					"\r\n",
+					"    def upload_file(self, file_name, file_data, env, entity=None):\r\n",
+					"        file_system_client = DataLakeServiceClient(\r\n",
+					"            account_url=self._storage_url, \r\n",
+					"            credential=self._storage_credential\r\n",
+					"        ).get_file_system_client(file_system=self._storage_container)\r\n",
+					"\r\n",
+					"        dir_client = file_system_client.get_directory_client(self._config[f\"storage.{env}_dir_name\"] + (f\"/{entity}\" if entity else ''))\r\n",
+					"        file_client = dir_client.get_file_client(file_name)\r\n",
+					"        file_data.seek(0)\r\n",
+					"        file_client.upload_data(file_data.getvalue(), overwrite=True)\r\n",
+					"        file_client.close()\r\n",
+					"        dir_client.close()\r\n",
+					"        file_system_client.close()\r\n",
+					"        #self._logger.info(f'File upload completed, {file_name}') \r\n",
+					"\r\n",
+					"    def download_file_blob(self, file_name, file_path):\r\n",
+					"        file_system_client = DataLakeServiceClient(\r\n",
+					"            account_url=self._storage_url, \r\n",
+					"            credential=self._storage_credential\r\n",
+					"        ).get_file_system_client(file_system=self._storage_container)\r\n",
+					"\r\n",
+					"        dir_client = file_system_client.get_directory_client(file_path)\r\n",
+					"        file_client = dir_client.get_file_client(file_name)\r\n",
+					"        file_hndlr = file_client.download_file()\r\n",
+					"        file_data = file_hndlr.readall()\r\n",
+					"        #self._logger.info(f'File download completed, {file_name}') \r\n",
+					"        return file_data\r\n",
+					"\r\n",
+					"    def split_upload_file_from_local(self, source_file_path, entity, env='landing'):\r\n",
+					"        try:\r\n",
+					"            #source_file_path = 'abfss://'+config[\"storage.container_name\"]+'@'+config[\"storage.account_name\"]+'.dfs.core.windows.net/'+config[\"storage.temp_dir\"]+'/'+config[\"source_flag\"]+'/'+entity+'_trfm.csv'\r\n",
+					"            logger.info(f\"Split Transformation file start; File Location: {source_file_path}\")\r\n",
+					"            chunksize = self._config[\"storage.chunksize\"]\r\n",
+					"            fileuploadname = 'part-'\r\n",
+					"            data_chunks  = pd.read_csv(source_file_path, chunksize=chunksize, dtype=str)\r\n",
+					"            _file_cnt = 0\r\n",
+					"            for chunks in data_chunks:\r\n",
+					"                logger.info(f\"File Chunk number: {_file_cnt}\")\r\n",
+					"                data = pd.DataFrame(chunks)\r\n",
+					"                uploadFileName = fileuploadname + str(_file_cnt).rjust(5,'0')\r\n",
+					"\r\n",
+					"                #landing_path = 'abfss://'+storagecontainername+'@'+storageaccountname+'.dfs.core.windows.net/'+config[\"storage.landing_dir_name\"]+'/'+entity\r\n",
+					"                landing_path = 'abfss://'+self._storagecontainername+'@'+self._storageaccountname+'.dfs.core.windows.net/'+config[\"storage.landing_dir_name\"]+'/'+entity+'/'+uploadFileName+'.csv'\r\n",
+					"                logger.info(f\"Split transformed file path: {landing_path}\")\r\n",
+					"                data.to_csv(landing_path, index=False)\r\n",
+					"            \r\n",
+					"                # self.upload_file(f'{uploadFileName}.csv', data, env, entity=entity)\r\n",
+					"                \r\n",
+					"                _file_cnt+=1\r\n",
+					"\r\n",
+					"            self._logger.info(f'File Split upload completed for entity - {entity}; No. of parts {_file_cnt}') \r\n",
+					"\r\n",
+					"        except Exception as e:\r\n",
+					"            self._logger.error(e)\r\n",
+					"            return None   \r\n",
+					"\r\n",
+					"    def download_file(self, file_name, dest_dir_path=tempfile.gettempdir(), env=None):\r\n",
+					"        try:\r\n",
+					"            file_system_client = DataLakeServiceClient(\r\n",
+					"                account_url=self._storage_url, \r\n",
+					"                credential=self._storage_credential\r\n",
+					"            ).get_file_system_client(file_system=self._storage_container)\r\n",
+					"\r\n",
+					"            directory_client = file_system_client.get_directory_client(self._config[f\"storage.{env}_dir_name\"])\r\n",
+					"            file_client = directory_client.get_file_client(file_name)\r\n",
+					"            download = file_client.download_file()\r\n",
+					"            downloaded_bytes = download.readall()\r\n",
+					"            file_path = os.path.join(dest_dir_path, file_name)\r\n",
+					"            local_file = open(file_path,'wb')\r\n",
+					"            local_file.write(downloaded_bytes)\r\n",
+					"            local_file.close()\r\n",
+					"            #self._logger.info(f'File download completed, {file_name}') \r\n",
+					"            return file_path\r\n",
+					"\r\n",
+					"        except Exception as e:\r\n",
+					"            return None\r\n",
+					"\r\n",
+					"    def get_files(self, env, entity):\r\n",
+					"        self._logger.info(f\"get_fiiles started:\")\r\n",
+					"        try:\r\n",
+					"            file_system_client = DataLakeServiceClient(\r\n",
+					"                account_url=self._storage_url, \r\n",
+					"                credential=self._storageaccountkey\r\n",
+					"            ).get_file_system_client(file_system=self._storagecontainername)\r\n",
+					"\r\n",
+					"            env_path = self._config[f\"storage.{env}_dir_name\"]\r\n",
+					"            self._logger.info(f\"env_path: {env_path}\")\r\n",
+					"            path1 = f\"{env_path}/{entity}\"\r\n",
+					"            self._logger.info(f\"path1: {path1}\")\r\n",
+					"            paths = file_system_client.get_paths(path=f\"{env_path}/{entity}\")\r\n",
+					"            return paths\r\n",
+					"            # return [p.name for p in paths]\r\n",
+					"\r\n",
+					"        except Exception as e:\r\n",
+					"            self._logger.error(e)\r\n",
+					"            return \"0\"\r\n",
+					"            \r\n",
+					"                \r\n",
+					"    def generate_sas_url(self, file_path):\r\n",
+					"        self._logger.info(f\"Generating SAS for file_path: {file_path}\")\r\n",
+					"        sas_token = generate_account_sas(\r\n",
+					"            account_name=self._storageaccountname,\r\n",
+					"            account_key=self._storageaccountkey,\r\n",
+					"            resource_types=ResourceTypes(object=True,),\r\n",
+					"            permission=AccountSasPermissions(read=True),\r\n",
+					"            expiry=datetime.utcnow() + timedelta(hours=1)\r\n",
+					"        )\r\n",
+					"\r\n",
+					"        return f\"https://{self._storageaccountname}.blob.core.windows.net/{self._storagecontainername}/{file_path}?{sas_token}\"\r\n",
+					""
+				],
+				"execution_count": 11
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"paths = DataLakeAdapter(config=config, logger=logger).get_files(env='landing', entity='eoy')\r\n",
+					"for path in paths:\r\n",
+					"    print(f\"path = {path}\")"
+				],
+				"execution_count": 13
+			}
+		]
+	}
+}

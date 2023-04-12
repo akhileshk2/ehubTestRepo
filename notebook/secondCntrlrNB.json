@@ -1,0 +1,89 @@
+{
+	"name": "secondCntrlrNB",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "dd4ce0d7-8a1e-48a3-8605-627c3c9989b1"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "python"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd\r\n",
+					"import sys\r\n",
+					"current_module = sys.modules[__name__]"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def mul_x(val):\r\n",
+					"    x=val[0]\r\n",
+					"    y=val[1]\r\n",
+					"    print(\"Transpy\")\r\n",
+					"    print(\"NB: \",config[\"source_flag\"])\r\n",
+					"    z = x*y\r\n",
+					"    return z\r\n",
+					"\r\n",
+					"def transform(config, a, b):\r\n",
+					"    if config[\"source_flag\"] == \"EOY\":\r\n",
+					"        print(\"secondCntlrNB\")\r\n",
+					"        # p = mul(config, a, b)\r\n",
+					"        data_chunk_l = {'num1':[2, 3, 4, 5], 'num2':[20, 21, 19, 18]}\r\n",
+					"        data_chunk = pd.DataFrame(data_chunk_l)\r\n",
+					"        data_chunk_def_l = {'outp':[200, 3000, 4000, 50000]}\r\n",
+					"        data_chunk_def = pd.DataFrame(data_chunk_def_l)\r\n",
+					"        print(data_chunk)\r\n",
+					"        fun = \"mul_Transpy\"\r\n",
+					"        src_cols = [\"num1\",\"num2\"]\r\n",
+					"        dst_cols = \"outp\"\r\n",
+					"        data_chunk[dst_cols] = data_chunk[src_cols].apply(getattr(current_module, str(fun)), axis = 1)\r\n",
+					"        return data_chunk\r\n",
+					"    else:\r\n",
+					"        data_s = {'num1':[2, 3, 4, 5], 'num2':[20, 21, 19, 18]}\r\n",
+					"        return data_s\r\n",
+					"\r\n",
+					""
+				]
+			}
+		]
+	}
+}

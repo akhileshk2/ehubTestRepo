@@ -1,0 +1,123 @@
+{
+	"name": "eoy_cql",
+	"properties": {
+		"folder": {
+			"name": "ce_pipelines/eoy/load_operator/queries"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool2023",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "51990b18-da41-4c77-a7b0-91447ee9e2aa"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
+				"name": "bmsparkpool2023",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"eoy_cypher = \"\"\"LOAD CSV WITH HEADERS FROM \"<<SAS_URL>>\"  AS line  \r\n",
+					"\r\n",
+					"MERGE (org:Organization{key:line.org_key})\r\n",
+					"ON CREATE SET org.name = line.entrepreneurs_company\r\n",
+					"SET org.connectionToEYType = 'direct'\r\n",
+					"\r\n",
+					"// Backward Compatibility\r\n",
+					"MERGE (osv:OrgSourceVersion:Version{id:line.org_key})\r\n",
+					"ON CREATE SET osv.name = line.entrepreneurs_company\r\n",
+					"ON CREATE SET osv.source = CASE WHEN line.org_key STARTS WITH 'CB' THEN 'crunchbase' ELSE 'eoy' END  \r\n",
+					"ON CREATE SET osv.priority = 1\r\n",
+					"\r\n",
+					"MERGE (org)-[:HAS_VERSION]->(osv) \r\n",
+					"\r\n",
+					"MERGE (npn:Person{key:line.per_key})\r\n",
+					"ON CREATE SET npn.name = line.entrepreneurs_name\r\n",
+					"\r\n",
+					"// Backward Compatibility\r\n",
+					"MERGE (psv:PersonSourceVersion:Version{id:line.per_key})\r\n",
+					"ON CREATE SET psv.name = line.entrepreneurs_name\r\n",
+					"ON CREATE SET psv.source = CASE WHEN line.per_key STARTS WITH 'CB' THEN 'crunchbase' ELSE 'eoy' END  \r\n",
+					"ON CREATE SET psv.priority = 1\r\n",
+					"\r\n",
+					"\r\n",
+					"MERGE (npn)-[:HAS_VERSION]->(psv)\r\n",
+					"\r\n",
+					"MERGE (event:Event{source:\"eoy\", name:line.event_name, year:line.event_year})\r\n",
+					"ON CREATE SET event.createdAt = datetime()\r\n",
+					"SET event.updatedAt = datetime()\r\n",
+					"SET event.type = 'EOY'\r\n",
+					"SET event.parentSource = 'eoy'\r\n",
+					"SET event.source = 'eoy'\r\n",
+					"\r\n",
+					"MERGE (npn)-[ipv:IS_PARTICIPANT{orgKey:line.org_key,orgName:line.entrepreneurs_company,nominationId:line.nomination_id}]->(event)\r\n",
+					"MERGE (org)-[ip:IS_PARTICIPANT{perKey:line.per_key,perName:line.entrepreneurs_name,nominationId:line.nomination_id}]->(event)\r\n",
+					"SET ip.isClient = CASE line.is_client WHEN 'Yes' THEN true ELSE false END\r\n",
+					"SET ip.isTarget = CASE line.is_target WHEN 'Yes' THEN true ELSE false END\r\n",
+					"SET ip.achievement = line.status_achieved\r\n",
+					"\r\n",
+					"SET ipv.isClient = CASE line.is_client WHEN 'Yes' THEN true ELSE false END\r\n",
+					"SET ipv.isTarget = CASE line.is_target WHEN 'Yes' THEN true ELSE false END\r\n",
+					"SET ipv.achievement = line.status_achieved\r\n",
+					"\r\n",
+					"MERGE (npn)-[wi:WORKS_IN]->(org)\r\n",
+					"\r\n",
+					"ON CREATE SET wi.source = 'eoy'\r\n",
+					"\r\n",
+					"// Backward Compatibility\r\n",
+					"MERGE(esv:EventSourceVersion:Version{source:\"eoy\", name:line.event_name, year:line.event_year, priority:1})\r\n",
+					"MERGE(esv)<-[:HAS_VERSION]-(event)\r\n",
+					"WITH DISTINCT line, esv\r\n",
+					"MATCH(cbpsv:PersonSourceVersion:Version{id:line.per_key})\r\n",
+					"WITH DISTINCT line, esv, cbpsv\r\n",
+					"MERGE(cbpsv)-[sp:IS_PARTICIPANT]->(esv)\r\n",
+					"ON CREATE SET sp.achievement = line.status_achieved\"\"\"\r\n",
+					""
+				],
+				"execution_count": 57
+			}
+		]
+	}
+}

@@ -1,0 +1,187 @@
+{
+	"name": "ent_transformation",
+	"properties": {
+		"folder": {
+			"name": "ce_pipelines/ent/transformation_operator"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool2023",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "cf1f5706-19b6-44cc-bf49-8b6039cc8b9c"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
+				"name": "bmsparkpool2023",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"%run ce_pipelines/common/transformation_controller"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/ent/config/ent_config"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"print(config)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import re\r\n",
+					"import json\r\n",
+					"import os\r\n",
+					"import tempfile\r\n",
+					"import pandas as pd\r\n",
+					"import csv\r\n",
+					"import hashlib\r\n",
+					"\r\n",
+					"class Transformations(TransformationController):\r\n",
+					"\r\n",
+					"    def __init__(self, config, logger):\r\n",
+					"        super().__init__(config, logger)\r\n",
+					"        self.local_cache = {\r\n",
+					"            \"org_key_lookup.csv\": None,\r\n",
+					"            \"emp_key_lookup.csv\": None\r\n",
+					"        }\r\n",
+					"\r\n",
+					"    def generate_org_id(self, org_name):\r\n",
+					"        text = org_name.lower().strip()\r\n",
+					"        return hashlib.md5(text.encode()).hexdigest()\r\n",
+					"\r\n",
+					"    def generate_per_id(self, val):\r\n",
+					"        ent_name = val[0]\r\n",
+					"        org_name = val[1]\r\n",
+					"        text = ent_name.lower().strip() + ' ' + org_name.lower().strip()\r\n",
+					"        return hashlib.md5(text.encode()).hexdigest()\r\n",
+					"\r\n",
+					"    def generate_event_key(self, val):\r\n",
+					"        # \"source\",\"event_name\",\"event_area\",\"event_region\",\"event_year\"\r\n",
+					"        text = ' '.join([v.lower().strip() for v in val if v])\r\n",
+					"        return hashlib.md5(text.encode()).hexdigest()\r\n",
+					"\r\n",
+					"    def list_social_media_ids(self, val):\r\n",
+					"        company_social_media = val[0]\r\n",
+					"        company_username = val[1]\r\n",
+					"        sm_names = company_social_media.split(',')\r\n",
+					"        sm_ids = company_username.split(',')\r\n",
+					"\r\n",
+					"        sm_lst = [] \r\n",
+					"        if len(sm_ids) == len(sm_names):\r\n",
+					"            for name, id in zip(sm_names,sm_ids):\r\n",
+					"                sm_lst.append(f'{name}::{id}')\r\n",
+					"        return ';'.join(sm_lst)\r\n",
+					"        \r\n",
+					"    def prep_ey_industry(self, ey_industry):\r\n",
+					"        return ey_industry.replace('&', 'and').strip()\r\n",
+					"\r\n",
+					"    def generate_sector_id(self,text):\r\n",
+					"        # Convert text to lower\r\n",
+					"        text = text.lower()\r\n",
+					"\r\n",
+					"        # Replace 'and' and '&' with \"\"\r\n",
+					"        text = text.replace(\"and\", \"\")\r\n",
+					"        text = text.replace(\"&\", \"\")\r\n",
+					"\r\n",
+					"        # Consider only alphabets and space\r\n",
+					"        text = re.sub(\"[^a-z\\s]\", \"\", text)\r\n",
+					"\r\n",
+					"        # Replace 'real estate' with re\r\n",
+					"        text = text.replace(\"real estate\", \"re\")\r\n",
+					"\r\n",
+					"        # Split text into tokens\r\n",
+					"        text_tokens = text.split(\" \")\r\n",
+					"\r\n",
+					"        # Join without space\r\n",
+					"        text = \"\".join(x for x in text_tokens if len(x) != 0)\r\n",
+					"\r\n",
+					"        return text\r\n",
+					""
+				],
+				"execution_count": 6
+			}
+		]
+	}
+}

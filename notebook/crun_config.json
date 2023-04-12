@@ -1,0 +1,285 @@
+{
+	"name": "crun_config",
+	"properties": {
+		"folder": {
+			"name": "ce_pipelines/crunchbase/crunchbase_config"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool2023",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "f7630ea3-d092-48c6-a39a-3f3ff2111adf"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
+				"name": "bmsparkpool2023",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"%run ce_pipelines/common/config"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"print(config)"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"com_config = config"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"config = {\r\n",
+					"    \r\n",
+					"    \"source_flag\": \"CB\",\r\n",
+					"    \"crunchbase_uri\": \"https://api.crunchbase.com/bulk/premium/v4/bulk_export.tar.gz?user_key=003b629a937369811e06cf5c1ae4aac3\",\r\n",
+					"    \"entity_files\": [\"organizations\", \"funding_rounds\", \"investments\", \"org_parents\", \"acquisitions\", \"people\", \"people_descriptions\", \"degrees\", \"jobs\"],\r\n",
+					"    \"datetime_format\": \"%Y-%m-%d %H:%M:%S\",\r\n",
+					"    \r\n",
+					"    \"storage.staging_dir_name\":\"staging/crunchbase\",\r\n",
+					"    \"storage.chunksize\":100,\r\n",
+					"    \"storage.landing_dir_name\":\"landing/crunchbase\",\r\n",
+					"\r\n",
+					"    \"data.chunksize\":10000,\r\n",
+					"    \"crunchbase.ey_uuid\": [\"a325d318-5167-525b-f61d-2ab89d6b05c9\"],\r\n",
+					"\r\n",
+					"    \"transformations\": {\r\n",
+					"        \r\n",
+					"        \"organizations_inc\":{\r\n",
+					"            \"invalid_columns\":[\"permalink\", \"roles\", \"state_code\", \"category_list\", \"category_groups_list\", \"num_funding_rounds\", \"total_funding\", \"total_funding_currency_code\", \"closed_on\", \"alias1\", \"alias2\", \"alias3\"], \r\n",
+					"            \"mappings\":[\r\n",
+					"                {\r\n",
+					"                    \"function\": \"startup_flag\",\r\n",
+					"                    \"src_column_names\": [\"revenue_range\",\"employee_count\",\"status\",\"last_funding_on\",\"founded_on\"],\r\n",
+					"                    \"dst_column_names\": \"startup_flag\"\r\n",
+					"                },\r\n",
+					"                {\r\n",
+					"                    \"function\": \"get_org_key\",\r\n",
+					"                    \"src_column_names\": \"uuid\",\r\n",
+					"                    \"dst_column_names\": \"org_key\"\r\n",
+					"                },            \r\n",
+					"                {\r\n",
+					"                    \"function\": \"handle_categories\",\r\n",
+					"                    \"src_column_names\": [\"category_list\",\"category_groups_list\"],\r\n",
+					"                    \"dst_column_names\": \"categories\"\r\n",
+					"                },\r\n",
+					"                {\r\n",
+					"                    \"function\": \"handle_employee_count\",\r\n",
+					"                    \"src_column_names\": \"employee_count\",\r\n",
+					"                    \"dst_column_names\": \"employee_count\"\r\n",
+					"                },\r\n",
+					"                {\r\n",
+					"                    \"function\": \"identify_academy\",\r\n",
+					"                    \"src_column_names\": ['domain', 'roles'],\r\n",
+					"                    \"dst_column_names\": \"role\"\r\n",
+					"                },\r\n",
+					"                {\r\n",
+					"                    \"function\": \"identify_entity\",\r\n",
+					"                    \"src_column_names\": ['uuid', 'roles', 'num_exits'],\r\n",
+					"                    \"dst_column_names\": \"type\"\r\n",
+					"                },\r\n",
+					"                {\r\n",
+					"                    \"function\": \"ey_entity_check\",\r\n",
+					"                    \"src_column_names\": \"uuid\",\r\n",
+					"                    \"dst_column_names\": \"is_ey\"\r\n",
+					"                }\r\n",
+					"                \r\n",
+					"            ]\r\n",
+					"        },\r\n",
+					"        \"organizations_geo_inc\": {\r\n",
+					"            \"invalid_columns\":[\"country_code\",\"region\",\"city\"],\r\n",
+					"            \"mappings\":[\r\n",
+					"                {\r\n",
+					"                    \"function\": \"transform_geo\",\r\n",
+					"                    \"src_column_names\": ['country_code','region','city'],\r\n",
+					"                    \"dst_column_names\": ['id', 'geo_entity', 'geo_path']\r\n",
+					"                }\r\n",
+					"            ]\r\n",
+					"        },\r\n",
+					"        \"people_inc\":{\r\n",
+					"            \r\n",
+					"            \"invalid_columns\":[\"type\",\"permalink\",\"state_code\"],\r\n",
+					"            \r\n",
+					"            \"mappings\":[\r\n",
+					"                {\r\n",
+					"                    \"function\": \"get_emp_key\",\r\n",
+					"                    \"src_column_names\": \"uuid\",\r\n",
+					"                    \"dst_column_names\": \"per_key\"\r\n",
+					"                },\r\n",
+					"                {\r\n",
+					"                    \"function\": \"ey_entity_check\",\r\n",
+					"                    \"src_column_names\": \"featured_job_organization_uuid\",\r\n",
+					"                    \"dst_column_names\": \"is_ey\"\r\n",
+					"                }\r\n",
+					"            ]\r\n",
+					"        },\r\n",
+					"        \"people_geo_inc\": {\r\n",
+					"            \"invalid_columns\":[\"country_code\",\"region\",\"city\"],\r\n",
+					"            \"mappings\":[\r\n",
+					"                {\r\n",
+					"                    \"function\": \"transform_geo\",\r\n",
+					"                    \"src_column_names\": ['country_code','region','city'],\r\n",
+					"                    \"dst_column_names\": ['id', 'geo_entity', 'geo_path']\r\n",
+					"                }\r\n",
+					"            ]\r\n",
+					"        },\r\n",
+					"        \"funding_rounds_inc\":{\r\n",
+					"            \"invalid_columns\":[\"permalink\",\"cb_url\",\"rank\",\"created_at\",\"country_code\",\"state_code\",\"region\",\"city\",\"raised_amount\",\r\n",
+					"                \"raised_amount_currency_code\",\"post_money_valuation_usd\",\"post_money_valuation\",\"post_money_valuation_currency_code\",\"investor_count\"],\r\n",
+					"            \"mappings\":[\r\n",
+					"                {\r\n",
+					"                    \"function\": \"handle_investment_type\",\r\n",
+					"                    \"src_column_names\": \"investment_type\",\r\n",
+					"                    \"dst_column_names\": \"investment_type\"\r\n",
+					"                }\r\n",
+					"            ]\r\n",
+					"        },\r\n",
+					"        \"degrees_inc\":{\r\n",
+					"            \r\n",
+					"            \"invalid_columns\":[\"uuid\",\"name\",\"type\",\"permalink\",\"cb_url\",\"rank\",\"created_at\",\"updated_at\"],\r\n",
+					"            \"mappings\":[\r\n",
+					"                {\r\n",
+					"                    \"function\": \"remove_unknowns\",\r\n",
+					"                    \"src_column_names\": \"subject\",\r\n",
+					"                    \"dst_column_names\": \"subject\"\r\n",
+					"                },\r\n",
+					"                {\r\n",
+					"                    \"function\": \"remove_unknowns\",\r\n",
+					"                    \"src_column_names\": \"degree_type\",\r\n",
+					"                    \"dst_column_names\": \"degree_type\"\r\n",
+					"                }\r\n",
+					"            ]\r\n",
+					"        },\r\n",
+					"        \"acquisitions_inc\":{\r\n",
+					"            \"invalid_columns\":[\"uuid\",\"name\",\"type\",\"permalink\",\"cb_url\",\"rank\",\"created_at\",\"updated_at\",\"acquiree_cb_url\",\r\n",
+					"                \"acquiree_country_code\",\"acquiree_state_code\",\"acquiree_region\",\"acquiree_city\",\"acquirer_cb_url\",\r\n",
+					"                \"acquirer_country_code\",\"acquirer_state_code\",\"acquirer_region\",\"acquirer_city\",\"price\",\"price_currency_code\"]\r\n",
+					"        },\r\n",
+					"        \"investments_organizations_inc\":{\r\n",
+					"            \"invalid_columns\":[\"uuid\",\"name\",\"type\",\"permalink\",\"cb_url\",\"rank\",\"created_at\",\"updated_at\"]\r\n",
+					"        },\r\n",
+					"        \"investments_people_inc\":{\r\n",
+					"            \"invalid_columns\":[\"uuid\",\"name\",\"type\",\"permalink\",\"cb_url\",\"rank\",\"created_at\",\"updated_at\"]\r\n",
+					"        },\r\n",
+					"        \"jobs_inc\":{\r\n",
+					"            \"invalid_columns\":[\"uuid\",\"name\",\"type\",\"permalink\",\"cb_url\",\"rank\",\"created_at\",\"updated_at\"]\r\n",
+					"        },\r\n",
+					"        \"org_parents_inc\":{\r\n",
+					"            \"invalid_columns\":[\"type\",\"permalink\",\"cb_url\",\"rank\",\"created_at\",\"updated_at\"]\r\n",
+					"        },\r\n",
+					"        \"people_descriptions_inc\":{\r\n",
+					"            \"invalid_columns\":[\"type\",\"permalink\",\"cb_url\",\"rank\",\"created_at\",\"updated_at\"]\r\n",
+					"        }\r\n",
+					"        \r\n",
+					"    }\r\n",
+					"}\r\n",
+					""
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"config.update(com_config)\r\n",
+					"print(config)"
+				],
+				"execution_count": 5
+			}
+		]
+	}
+}

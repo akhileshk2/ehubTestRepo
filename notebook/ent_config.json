@@ -1,0 +1,213 @@
+{
+	"name": "ent_config",
+	"properties": {
+		"folder": {
+			"name": "ce_pipelines/ent/config"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool2023",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "0016a773-397b-48ee-affa-c935fd27e30d"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
+				"name": "bmsparkpool2023",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/common/config"
+				],
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"print(config)"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"com_config = config"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"config = {\r\n",
+					"    \"source_flag\": \"ENT\",\r\n",
+					"    \"datetime_format\": \"%Y-%m-%d %H:%M:%S\",\r\n",
+					"        \r\n",
+					"    \"storage.staging_dir_name\":\"data/staging/ent\",\r\n",
+					"    \"storage.chunksize\":200,\r\n",
+					"    \"storage.landing_dir_name\":\"data/landing/ent\",\r\n",
+					"    \r\n",
+					"    \"data.chunksize\":10000,\r\n",
+					"        \r\n",
+					"    \"transformations\": {\r\n",
+					"        \"ent\":{\r\n",
+					"            \"invalid_columns\":[], \r\n",
+					"            \"mappings\":[\r\n",
+					"                \r\n",
+					"                {\r\n",
+					"                    \"function\": \"generate_org_id\",\r\n",
+					"                    \"src_column_names\": \"company_name\",\r\n",
+					"                    \"dst_column_names\": \"org_id\"\r\n",
+					"                },\r\n",
+					"                {\r\n",
+					"                    \"function\": \"generate_per_id\",\r\n",
+					"                    \"src_column_names\": [\"entrepreneurs_name\",\"company_name\"],\r\n",
+					"                    \"dst_column_names\": \"per_id\"\r\n",
+					"                },\r\n",
+					"                {\r\n",
+					"                    \"function\": \"get_org_key\",\r\n",
+					"                    \"src_column_names\": \"org_id\",\r\n",
+					"                    \"dst_column_names\": \"org_key\"\r\n",
+					"                },\r\n",
+					"                {\r\n",
+					"                    \"function\": \"get_emp_key\",\r\n",
+					"                    \"src_column_names\": \"per_id\",\r\n",
+					"                    \"dst_column_names\": \"per_key\"\r\n",
+					"                },\r\n",
+					"                {\r\n",
+					"                    \"function\": \"generate_event_key\",\r\n",
+					"                    \"src_column_names\": [\"source\",\"event_name\",\"event_area\",\"event_region\",\"event_year\"],\r\n",
+					"                    \"dst_column_names\": \"event_key\"\r\n",
+					"                },\r\n",
+					"                {\r\n",
+					"                    \"function\": \"list_social_media_ids\",\r\n",
+					"                    \"src_column_names\": [\"company_social_media\",\"company_username\"],\r\n",
+					"                    \"dst_column_names\": \"social_media\"\r\n",
+					"                },\r\n",
+					"                {\r\n",
+					"                    \"function\": \"prep_ey_industry\",\r\n",
+					"                    \"src_column_names\": \"ey_industry\",\r\n",
+					"                    \"dst_column_names\": \"ey_industry\"\r\n",
+					"                },\r\n",
+					"                {\r\n",
+					"                    \"function\": \"generate_sector_id\",\r\n",
+					"                    \"src_column_names\": \"ey_industry\",\r\n",
+					"                    \"dst_column_names\": \"sector_id\"\r\n",
+					"                }\r\n",
+					"                \r\n",
+					"            ]\r\n",
+					"        }   \r\n",
+					"    }\r\n",
+					"}\r\n",
+					"\r\n",
+					"#config.update(base_config)"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"config.update(com_config)\r\n",
+					"print(config)"
+				],
+				"execution_count": 4
+			}
+		]
+	}
+}

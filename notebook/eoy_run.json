@@ -1,0 +1,268 @@
+{
+	"name": "eoy_run",
+	"properties": {
+		"folder": {
+			"name": "ce_pipelines/eoy/load_operator"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool2023",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 1,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "1",
+				"spark.dynamicAllocation.maxExecutors": "1",
+				"spark.autotune.trackingId": "20ccdfb6-5695-44b2-813c-c7b12463df27"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
+				"name": "bmsparkpool2023",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/common/neo_connector"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"pip install azure-storage-file-datalake"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/common/datalake_connector"
+				],
+				"execution_count": 16
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/eoy/config/eoy_config"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/eoy/config/logger_config"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# %run ce_pipelines/eoy/load_operator/queries/query_selector"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/eoy/load_operator/queries/eoy_cql"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import sys\r\n",
+					"import tempfile\r\n",
+					"import os\r\n",
+					"from notebookutils import mssparkutils\r\n",
+					"\r\n",
+					"def execute(entities=['eoy'], **kwargs):\r\n",
+					"\r\n",
+					"    # Update Default Config - Optional\r\n",
+					"    config.update(kwargs)\r\n",
+					"    \r\n",
+					"    graph = GraphAdapter(config=config, logger=logger)\r\n",
+					"    data_lake_conn = DataLakeAdapter(config=config, logger=logger)\r\n",
+					"\r\n",
+					"    entityquery_dict = {\"eoy\":eoy_cypher}\r\n",
+					"\r\n",
+					"    storageaccountname = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.account_name\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"    logger.info(f\"Storage Account Name - {storageaccountname} - Started.\")\r\n",
+					"    storagecontainername = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.container_name\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"    logger.info(f\"Storage Container Name - {storagecontainername} - Started.\")\r\n",
+					"    storageaccountkey = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.account_key\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"    print(storageaccountkey)\r\n",
+					"\r\n",
+					"    for entity in entities:\r\n",
+					"        \r\n",
+					"        try:\r\n",
+					"            logger.info(f\"Load - {entity} - Started.\")\r\n",
+					"            remote_files = data_lake_conn.get_files(env='landing', entity=entity)\r\n",
+					"            logger.info(f\"remote_files: {remote_files} Load \")\r\n",
+					"            for remote_file in remote_files:\r\n",
+					"                logger.info(f\"File Name: {remote_file} Load \")\r\n",
+					"                sas_url = data_lake_conn.generate_sas_url(remote_file)\r\n",
+					"                logger.info(f\"File sas_url: {sas_url} \")\r\n",
+					"                if sas_url:\r\n",
+					"                    logger.info(f\"File sas_url: {sas_url} \")\r\n",
+					"                    query_template = entityquery_dict[entity]\r\n",
+					"                    query = query_template.replace('<<SAS_URL>>', sas_url)\r\n",
+					"                    logger.info(f\"For {entity} query - {query}.\")\r\n",
+					"                    if query:    \r\n",
+					"                        graph.execute_query(query)\r\n",
+					"                    \r\n",
+					"            logger.info(f\"Load - {entity} - Completed.\")\r\n",
+					"        except Exception as e:\r\n",
+					"            logger.error(str(e))\r\n",
+					"            logger.info(f\"Load - {entity} - Failed.\")\r\n",
+					"\r\n",
+					"    graph.close()"
+				],
+				"execution_count": 20
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"execute()"
+				],
+				"execution_count": 21
+			}
+		]
+	}
+}

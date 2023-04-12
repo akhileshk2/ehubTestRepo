@@ -1,0 +1,144 @@
+{
+	"name": "archive",
+	"properties": {
+		"folder": {
+			"name": "ce_pipelines/common"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool2023",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "9a458a32-c60f-49f9-8f16-95f5c51b5064"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
+				"name": "bmsparkpool2023",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"pip install azure-storage-file-datalake"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import os\r\n",
+					"from datetime import datetime\r\n",
+					"from azure.storage.filedatalake import DataLakeServiceClient\r\n",
+					"\r\n",
+					"class Archive():\r\n",
+					"\r\n",
+					"    def __init__(self,config,entity=None):\r\n",
+					"        self._config = config\r\n",
+					"        self._entity = entity\r\n",
+					"\r\n",
+					"\r\n",
+					"    def move_folder(self):\r\n",
+					"        container_name = self._config.get(\"storage.container_name\")\r\n",
+					"        url = \"{}://{}.dfs.core.windows.net\".format(\"https\", self._config.get(\"storage.account_name\"))\r\n",
+					"        try:\r\n",
+					"            # Get today's datetime\r\n",
+					"            today = str(datetime.now())\r\n",
+					"            file_system_client = DataLakeServiceClient(account_url=url,credential=self._config.get(\"storage.account_key\")).get_file_system_client(\r\n",
+					"                                                                                                                file_system=container_name)\r\n",
+					"\r\n",
+					"            # if archive flag is True, then move the files to archive directory\r\n",
+					"            if self._config.get(\"archive_flag\"):\r\n",
+					"                # create a directory with today's date\r\n",
+					"                file_system_client.create_directory(\"archive/\" + today)\r\n",
+					"\r\n",
+					"                # create a directory with entity name\r\n",
+					"                file_system_client.create_directory(\"archive/\" + today +  \"/\" + self._entity.lower())\r\n",
+					"\r\n",
+					"                # # check whether this directory already had any files in it and delete them\r\n",
+					"                # file_path_entity = file_system_client.get_paths(path=\"archive/\" + today + \"/\" + self._entity)\r\n",
+					"                # for path in file_path_entity:\r\n",
+					"                #     file_system_client.delete_file(path.name)\r\n",
+					"\r\n",
+					"                # moving files from landing to archive directory\r\n",
+					"                file_paths = file_system_client.get_paths(path=\"landing/\" + self._entity.lower(), recursive=False)\r\n",
+					"                for path in file_paths:\r\n",
+					"                    file_name_tokens = path.name.split('/')\r\n",
+					"                    file_name = ('/').join(file_name_tokens[1:])\r\n",
+					"                    directory_client = file_system_client.get_directory_client(path.name)\r\n",
+					"                    new_dir_name = \"archive/\" + today + \"/\" + file_name\r\n",
+					"                    directory_client.rename_directory(new_name=directory_client.file_system_name + '/' + new_dir_name)\r\n",
+					"\r\n",
+					"            # if archive flag is False, delete the files from landing directory\r\n",
+					"            else:\r\n",
+					"                directory_path = file_system_client.get_paths(path=\"landing/\" + self._entity.lower(), recursive=False)\r\n",
+					"                for path in directory_path:\r\n",
+					"                    inner_directory_path = file_system_client.get_paths(path=path.name, recursive=False)\r\n",
+					"                    for inner_path in inner_directory_path:\r\n",
+					"                        file_system_client.delete_file(inner_path.name, recursive=False)\r\n",
+					"\r\n",
+					"                        try:\r\n",
+					"                            file_system_client.delete_directory(path.name, recursive=False)\r\n",
+					"                        except:\r\n",
+					"                            pass\r\n",
+					"\r\n",
+					"\r\n",
+					"        except Exception as e:\r\n",
+					"            raise Exception(e)\r\n",
+					"\r\n",
+					""
+				],
+				"execution_count": 35
+			}
+		]
+	}
+}

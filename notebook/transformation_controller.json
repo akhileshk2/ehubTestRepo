@@ -1,0 +1,517 @@
+{
+	"name": "transformation_controller",
+	"properties": {
+		"folder": {
+			"name": "ce_pipelines/common"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool2023",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "96f301e1-834f-49f3-8fef-df2c2f5fd6b1"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
+				"name": "bmsparkpool2023",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"%run ce_pipelines/common/az_table_connector"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"pip install azure-storage-file-datalake"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/common/datalake_connector"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# This call is not required since the config json content is passed from trans_run notebook to the TransformationController class\r\n",
+					"# %run ce_pipelines/common/config"
+				],
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# This call is not required since the config json content is passed from trans_run notebook to the TransformationController class\r\n",
+					"# print(config[\"storage.account_name\"])\r\n",
+					"# #print(e_config)\r\n",
+					"# cm_config = config\r\n",
+					"# print(cm_config)"
+				],
+				"execution_count": 21
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# This call is not required since the config json content is passed from trans_run notebook to the TransformationController class\r\n",
+					"# %run ce_pipelines/eoy/config/eoy_config"
+				],
+				"execution_count": 22
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# This call is not required since the config json content is passed from trans_run notebook to the TransformationController class\r\n",
+					"# print(config[\"data.chunksize\"])\r\n",
+					"# config.update(cm_config)\r\n",
+					"# print(config)\r\n",
+					"# print(config[\"storage.account_name\"])\r\n",
+					"# print(config[\"storage.lookup_dir\"])"
+				],
+				"execution_count": 23
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from notebookutils import mssparkutils\r\n",
+					"# storageaccountname = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.account_name\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"# print(storageaccountname)\r\n",
+					"# storagecontainername = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.container_name\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"# print(storagecontainername)\r\n",
+					"# storageaccountkey = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.account_key\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"# print(storageaccountkey)"
+				],
+				"execution_count": 12
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import os\r\n",
+					"import tempfile\r\n",
+					"import pandas as pd\r\n",
+					"import re\r\n",
+					"import csv\r\n",
+					"import traceback\r\n",
+					"from io import BytesIO \r\n",
+					"\r\n",
+					"class TransformationController:\r\n",
+					"\r\n",
+					"    def __init__(self, config, logger):\r\n",
+					"        logger.info(f\"TransformationController - init - Started.\")\r\n",
+					"        self.config = config\r\n",
+					"        self._logger = logger\r\n",
+					"        self._org_key_lookup = pd.DataFrame()\r\n",
+					"        self._emp_key_lookup = pd.DataFrame()\r\n",
+					"\r\n",
+					"        self.storageaccountname = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.account_name\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"        logger.info(f\"TransformationController acc name - {self.storageaccountname} \")\r\n",
+					"        self.storagecontainername = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.container_name\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"        logger.info(f\"TransformationController cntr nm - {self.storagecontainername} \")\r\n",
+					"        self.storageaccountkey = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.account_key\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"        logger.info(f\"TransformationController acc key - {self.storageaccountkey} \")\r\n",
+					"        \r\n",
+					"\r\n",
+					"    def transform(self, file_path, entity):\r\n",
+					"        logger.info(f\"TransformationController transform started - {file_path} \")\r\n",
+					"        #file_name = 'eoy.csv'\r\n",
+					"\r\n",
+					"        #file_path = 'abfss://'+config[\"storage.container_name\"]+'@'+config[\"storage.account_name\"]+'.dfs.core.windows.net/'+config[\"storage.staging_dir_name\"]+'/'+(file_name)\r\n",
+					"        #correct-file_path = 'abfss://'+storagecontainername+'@'+storageaccountname+'.dfs.core.windows.net/'+config[\"storage.staging_dir_name\"]+'/'+(file_name)\r\n",
+					"\r\n",
+					"\r\n",
+					"        data_chunks  = pd.read_csv(file_path, chunksize=config[\"data.chunksize\"], dtype=str)\r\n",
+					"\r\n",
+					"        #file_path = 'abfss://test@bmdatalakestorage2023.dfs.core.windows.net/data/staging/eoy/eoy.csv'\r\n",
+					"       \r\n",
+					"        _transformation_lookup = config[\"transformations\"]\r\n",
+					"        transformations = _transformation_lookup.get(entity,{}).get('mappings',[])\r\n",
+					"        \r\n",
+					"        final_chunk = []\r\n",
+					"\r\n",
+					"        for data_chunk in data_chunks:\r\n",
+					"            \r\n",
+					"            data_chunk.dropna(how='all', inplace=True)\r\n",
+					"            data_chunk.fillna('', inplace=True)\r\n",
+					"            for trfm in transformations:\r\n",
+					"                try:\r\n",
+					"                    \r\n",
+					"                    fun = trfm[\"function\"]\r\n",
+					"                    src_cols = trfm[\"src_column_names\"]\r\n",
+					"                    dst_cols = trfm[\"dst_column_names\"]\r\n",
+					"                    \r\n",
+					"                    if \"threshold\" in trfm:\r\n",
+					"                        \r\n",
+					"                        data_chunk[dst_cols] = data_chunk[src_cols].apply(getattr(self, fun), args=(trfm[\"threshold\"],))\r\n",
+					"                    elif isinstance(src_cols, list):\r\n",
+					"                        \r\n",
+					"                        data_chunk[dst_cols] = data_chunk[src_cols].apply(getattr(self, fun), axis=1)\r\n",
+					"                    else:\r\n",
+					"                        \r\n",
+					"                        data_chunk[dst_cols] = data_chunk[src_cols].apply(getattr(self, fun))\r\n",
+					"                except Exception as e:\r\n",
+					"                    self._logger.error(str(e))\r\n",
+					"                    traceback.print_exc()\r\n",
+					"\r\n",
+					"\r\n",
+					"            final_chunk.append(data_chunk)\r\n",
+					"        if final_chunk:\r\n",
+					"            _data = pd.concat(final_chunk, ignore_index=True)\r\n",
+					"\r\n",
+					"            invalid_columns = _transformation_lookup.get('invalid_columns', [])\r\n",
+					"            if invalid_columns:\r\n",
+					"                _data.drop(invalid_columns, axis=1, inplace=True)\r\n",
+					"\r\n",
+					"            #local_file_path = os.path.join(tempfile.gettempdir(), f\"{entity}_trfm.csv\")\r\n",
+					"            #dest_path = 'abfss://'+config[\"storage.container_name\"]+'@'+config[\"storage.account_name\"]+'.dfs.core.windows.net/'+config[\"storage.temp_dir\"]+'/'+entity+'eoy_trfm.csv'\r\n",
+					"            #dest_path = 'abfss://'+config[\"storage.container_name\"]+'@'+config[\"storage.account_name\"]+'.dfs.core.windows.net/'+config[\"storage.temp_dir\"]+'/'+config[\"source_flag\"]+'/'+entity+'_trfm.csv'\r\n",
+					"            temp_path = 'abfss://'+self.storagecontainername+'@'+self.storageaccountname+'.dfs.core.windows.net/'+config[\"storage.temp_dir\"]+'/'+config[\"source_flag\"]+'/'+entity+'_trfm.csv'\r\n",
+					"\r\n",
+					"            \r\n",
+					"            data = pd.DataFrame(_data)\r\n",
+					"            #data.to_csv(dest_path,index=False,storage_options = {'account_key':'Wl+cozJ6xDQtnstjWpmHpz/2UGxgaptMpDl1/OMPiLUQS+2fuNdeqMmnvzgCTXTwL7c3oNYjrRvl+AStI26Zaw=='})\r\n",
+					"            data.to_csv(temp_path,index=False,storage_options = {'account_key':self.storageaccountkey})\r\n",
+					"\r\n",
+					"            return temp_path  \r\n",
+					"        \r\n",
+					"        #else:\r\n",
+					"            #return None\r\n",
+					"\r\n",
+					"    geo_type = {2:'city',1:'region',0:'country'}\r\n",
+					"    geo_prefix = {2:'CI',1:'RE',0:'CO'}\r\n",
+					"\r\n",
+					"    def transform_geo(self, geo_data):\r\n",
+					"        # input - geo_data - list Order - country_code,region,city \r\n",
+					"    \r\n",
+					"        inc_id = []\r\n",
+					"        inc_geo_nodes = []\r\n",
+					"        for idx, ge in enumerate(geo_data):\r\n",
+					"            if ge:\r\n",
+					"                \r\n",
+					"                raw_ge = re.sub(r'\\W','',ge)\r\n",
+					"                inc_id.append(self.geo_prefix[idx])\r\n",
+					"                inc_id.append(raw_ge[0:30].upper())\r\n",
+					"                \r\n",
+					"                inc_geo_nodes.append(f\"{''.join(inc_id[0:-2])};{''.join(inc_id)};{self.geo_type[idx]};{ge.strip()};{raw_ge.lower()}\")\r\n",
+					"                \r\n",
+					"        return pd.Series([''.join(inc_id), inc_geo_nodes[-1], '|'.join(inc_geo_nodes)])\r\n",
+					"    \r\n",
+					"    def ey_entity_check(self, val):\r\n",
+					"        return 1 if val in self.config['crunchbase.ey_uuid'] else 0\r\n",
+					"    \r\n",
+					"    def normalize(self, val):\r\n",
+					"        return re.sub(r\"[^a-z 0-9]\",\"\",val.lower()).strip() if val else ''\r\n",
+					"    \r\n",
+					"    def remove_unknowns(self, val):\r\n",
+					"        return None if str(val).lower().strip() == 'unknown' else val\r\n",
+					"\r\n",
+					"    def remove_spl(self, val):\r\n",
+					"        if (str(val) != 'nan') and ( str(val) != 'None'):\r\n",
+					"            s = re.sub(r\"[^a-z 0-9]\",\"\",val.lower()).strip()\r\n",
+					"        else:\r\n",
+					"            s = None\r\n",
+					"        return s\r\n",
+					"\r\n",
+					"    def link_preprocessing(self, val, threshold):\r\n",
+					"        if (str(val) != 'nan') and ( str(val) != 'None'):\r\n",
+					"            if val[-1] == '/':\r\n",
+					"                ret = val[:-1]\r\n",
+					"            spltval = val.split('/')\r\n",
+					"            i = 0\r\n",
+					"            retV = \"\"\r\n",
+					"            if len(spltval) >= (threshold):\r\n",
+					"                while i<threshold:\r\n",
+					"                    retV = retV + spltval[i] + \"/\"\r\n",
+					"                    i = i+1\r\n",
+					"                retV = retV[:-1]\r\n",
+					"        else:\r\n",
+					"            retV = None\r\n",
+					"        return pd.Series([retV])\r\n",
+					"    \r\n",
+					"    def get_value(self, file_name: str, lookup_field: str, searched_field: str, lookup_value, default):\r\n",
+					"        source = self.config['source_flag']\r\n",
+					"        lookup_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),\"lookup_files\",f\"{source}_{file_name}\")\r\n",
+					"        try:\r\n",
+					"            lookup_df = pd.read_csv(lookup_file_path, dtype=str)\r\n",
+					"        except pd.errors.ParserError as e:\r\n",
+					"            self._logger.warning(f\"{str(e)}, Attempting advanced parsing\")\r\n",
+					"            lookup_df = pd.read_csv(lookup_file_path, engine='python', quoting=csv.QUOTE_NONE, dtype=str)\r\n",
+					"        candidates = lookup_df[(lookup_df[lookup_field] == lookup_value)][searched_field]\r\n",
+					"        if not candidates.empty:\r\n",
+					"            for elem in candidates:\r\n",
+					"                value = elem\r\n",
+					"                break\r\n",
+					"            return value\r\n",
+					"        else:\r\n",
+					"            return default\r\n",
+					"\r\n",
+					"    def get_values(self, file_name: str, lookup_field: str, searched_field: list, lookup_value, source_match=False, default=\"\"):\r\n",
+					"        source = self.config['source_flag']\r\n",
+					"        \r\n",
+					"        #file_name = 'org_key_lookup.csv'\r\n",
+					"       \r\n",
+					"        #file_path2 = 'abfss://'+config[\"storage.container_name\"]+'@'+config[\"storage.account_name\"]+'.dfs.core.windows.net/'+config[\"storage.lookup_dir\"]+'/'+config['source_flag']+'_'+(file_name)\r\n",
+					"        file_path2 = 'abfss://'+self.storagecontainername+'@'+self.storageaccountname+'.dfs.core.windows.net/'+config[\"storage.lookup_dir\"]+'/'+config['source_flag']+'_'+(file_name)\r\n",
+					"\r\n",
+					"        #lookup_df = cache[file_name] if cache else None\r\n",
+					"        if 1==1:\r\n",
+					"\r\n",
+					"\r\n",
+					"            #self._logger.info(f\"{file_name} - Reading from file\")\r\n",
+					"\r\n",
+					"            #lookup_dir = self.config['storage.lookup_dir']\r\n",
+					"            #df_data = DataLakeAdapter(self.config, self._logger).download_file_blob(file_name=f\"{source}_{file_name}\", file_path=lookup_dir)\r\n",
+					"            #lookup_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),\"lookup_files\",f\"{source}_{file_name}\")\r\n",
+					"            \r\n",
+					"            try:\r\n",
+					"                lookup_df = pd.read_csv(file_path2, dtype=str)\r\n",
+					"            except pd.errors.ParserError as e:\r\n",
+					"                self._logger.warning(f\"{str(e)}, Attempting advanced parsing\")\r\n",
+					"                lookup_df = pd.read_csv(file_path2, quoting=csv.QUOTE_NONE, dtype=str)\r\n",
+					"\r\n",
+					"\r\n",
+					"        if source_match:\r\n",
+					"            candidates = lookup_df[(lookup_df['source'] == source) & (lookup_df[lookup_field] == lookup_value)][searched_field]\r\n",
+					"        else:\r\n",
+					"            candidates = lookup_df[(lookup_df[lookup_field] == lookup_value)][searched_field]\r\n",
+					"        \r\n",
+					"        value = default\r\n",
+					"        if not candidates.empty:\r\n",
+					"            if isinstance(searched_field, list):\r\n",
+					"                for idx, elem in candidates.iterrows():\r\n",
+					"                    res = []\r\n",
+					"                    for sf in searched_field:\r\n",
+					"                        res.append(elem[sf])\r\n",
+					"                    value = ';'.join(res)\r\n",
+					"                    break\r\n",
+					"            else:\r\n",
+					"                for elem in candidates:\r\n",
+					"                    value = elem\r\n",
+					"\r\n",
+					"                    break\r\n",
+					"                    \r\n",
+					"        return value\r\n",
+					"\r\n",
+					"\r\n",
+					"    # Generate org_key\r\n",
+					"    def get_org_key(self, source_id):\r\n",
+					"        \r\n",
+					"        source = self.config['source_flag']\r\n",
+					"    \r\n",
+					"\r\n",
+					"        return self.get_values(file_name=\"org_key_lookup.csv\", \r\n",
+					"                            lookup_field=\"source_id\", \r\n",
+					"                            searched_field=\"key\", \r\n",
+					"                            lookup_value=source_id, \r\n",
+					"                            source_match=True, default=source + str(source_id))\r\n",
+					"    \r\n",
+					"    # Generate emp_key\r\n",
+					"    def get_emp_key(self, source_id):\r\n",
+					"        \r\n",
+					"        source = self.config['source_flag']\r\n",
+					"        \r\n",
+					"        return self.get_values(file_name=\"emp_key_lookup.csv\", \r\n",
+					"                            lookup_field=\"source_id\", \r\n",
+					"                            searched_field=\"key\", \r\n",
+					"                            lookup_value=source_id, \r\n",
+					"                            source_match=True, default=source + str(source_id))\r\n",
+					"        \r\n",
+					"\r\n",
+					"    def get_table_values(self,partition_key,row_key,columns):\r\n",
+					"        try:\r\n",
+					"            result_query = TableConnector(self.config).search(partition_key=partition_key,row_key=row_key,columns=columns)\r\n",
+					"\r\n",
+					"            lst = []\r\n",
+					"            for col in columns:\r\n",
+					"                lst.append(result_query.get(col,\"\"))\r\n",
+					"\r\n",
+					"            result = \";\".join(lst)\r\n",
+					"\r\n",
+					"\r\n",
+					"        except Exception as err:\r\n",
+					"            raise Exception('Error in extracting entities from azure table:{}'.format(err))\r\n",
+					"\r\n",
+					"        return result\r\n",
+					"\r\n",
+					"\r\n",
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import logging\r\n",
+					"# logger config\r\n",
+					"# log levels: debug, info, warning, error, critical\r\n",
+					"logFormatter = logging.Formatter('%(asctime)s | %(name)s | %(levelname)s | %(message)s',datefmt='%Y-%m-%d %H:%M:%S')\r\n",
+					"logger = logging.getLogger('EOY')\r\n",
+					"logger.setLevel(logging.DEBUG)\r\n",
+					"# stream logger\r\n",
+					"sh = logging.StreamHandler() # stream handler\r\n",
+					"sh.setFormatter(logFormatter)\r\n",
+					"sh.setLevel(logging.INFO)\r\n",
+					"logger.addHandler(sh)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#obj = TransformationController(config,logger)"
+				]
+			}
+		]
+	}
+}

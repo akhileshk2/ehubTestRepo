@@ -1,0 +1,68 @@
+{
+	"name": "ermsCypher",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool2023",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "5b358bd8-426a-4fe4-afc3-8bd63a5c34c4"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
+				"name": "bmsparkpool2023",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"cypher = \"\"\"LOAD CSV WITH HEADERS FROM \"https://bmdatalakestorage2023.blob.core.windows.net/bmfilesystem2023/data/landing/erms/organizations_inc/part-00000.csv?sp=r&st=2023-02-01T11:50:20Z&se=2023-02-02T19:50:20Z&spr=https&sv=2021-06-08&sr=b&sig=Q764ixiccprFrjAf5T5UcptEt4aXXPL%2BE5vsNut9jkU%3D\" AS line\r\n",
+					"    WITH line, apoc.date.format(datetime().epochMillis,\"ms\", \"yyyy-MM-dd HH:mm:ss\") AS timeStamp\r\n",
+					"    MERGE (norg:Organization{key:line.org_key})\r\n",
+					"    ON CREATE SET norg.role = line.role\"\"\""
+				],
+				"execution_count": 1
+			}
+		]
+	}
+}

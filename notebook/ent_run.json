@@ -1,0 +1,258 @@
+{
+	"name": "ent_run",
+	"properties": {
+		"folder": {
+			"name": "ce_pipelines/ent/transformation_operator"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool2023",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 1,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "1",
+				"spark.dynamicAllocation.maxExecutors": "1",
+				"spark.autotune.trackingId": "096f5103-d4bc-4115-96f2-43d53902acec"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
+				"name": "bmsparkpool2023",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/ent/transformation_operator/ent_transformation"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/common/datalake_connector"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"pip install azure-storage-file-datalake"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/ent/config/ent_config"
+				],
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"print(config)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/ent/config/ent_logger_config"
+				],
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import sys\r\n",
+					"import tempfile\r\n",
+					"import os\r\n",
+					"\r\n",
+					"#from ce_pipelines import DataLakeAdapter\r\n",
+					"#from ce_pipelines.eoy import config,logger\r\n",
+					"\r\n",
+					"\r\n",
+					"#from .transformations import Transformations\r\n",
+					"\r\n",
+					"def execute(entities=['ent'],**kwargs):\r\n",
+					"        \r\n",
+					"    storageaccountname = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.account_name\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"    print(storageaccountname)\r\n",
+					"    storagecontainername = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.container_name\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"    print(storagecontainername)\r\n",
+					"    # storageaccountkey = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.account_key\"],config[\"linkedservice.keyvaultls\"])\r\n",
+					"    # print(storageaccountkey)\r\n",
+					"\r\n",
+					"    # Update Default Config - Optional\r\n",
+					"    config.update(kwargs)\r\n",
+					"    for entity in entities:\r\n",
+					"        print(entity)\r\n",
+					"    \r\n",
+					"        logger.info(f\"Transformation - {entity} - Started.\")\r\n",
+					"        file_name = f'{entity}.csv'\r\n",
+					"        # local_temp_file_paths = []\r\n",
+					"\r\n",
+					"        file_path = 'abfss://'+storagecontainername+'@'+storageaccountname+'.dfs.core.windows.net/'+config[\"storage.staging_dir_name\"]+'/'+(file_name)\r\n",
+					"        logger.info(f\"Source File path - {file_path} .\")\r\n",
+					"        # data_lake_conn = DataLakeAdapter(config=config, logger=logger, env='landing', entity=entity)\r\n",
+					"\r\n",
+					"\r\n",
+					"        #transformed_file_path = TransformationController(config=config, logger=logger).transform(file_path, entity) \r\n",
+					"        transformed_file_path = Transformations(config=config, logger=logger).transform(file_path, entity)\r\n",
+					"        logger.info(f\"Transformation; File Location: {transformed_file_path}\")\r\n",
+					"        if transformed_file_path:\r\n",
+					"            #local_temp_file_paths.append(transformed_file_path)\r\n",
+					"            logger.info(f\"Transformation completed; File Location: {transformed_file_path}\")\r\n",
+					"            print(\"myfile\",transformed_file_path)\r\n",
+					"            # data_lake_conn.split_upload_file_from_local(transformed_file_path, entity, env='landing')\r\n",
+					"            DataLakeAdapter(config=config, logger=logger, env='landing', entity=entity).split_upload_file_from_local(transformed_file_path, entity, env='landing')\r\n",
+					"\r\n",
+					"        \r\n",
+					"        # # Delete temporary files\r\n",
+					"\r\n",
+					"        # #for local_temp_file_path in local_temp_file_paths:\r\n",
+					"        #     #if os.path.exists(local_temp_file_path):\r\n",
+					"        #        # os.remove(local_temp_file_path)\r\n",
+					"        #         #logger.info(f\"File deleted - {local_temp_file_path}\")\r\n",
+					"        #     #else:\r\n",
+					"        #         #logger.info(f\"File doesn't exist - {local_temp_file_path}\")\r\n",
+					"\r\n",
+					"        # #logger.info(f\"Transformation - {entity} - Completed.\")\r\n",
+					""
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"execute()"
+				],
+				"execution_count": 10
+			}
+		]
+	}
+}
