@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"value": "bmworkspace2023"
+		},
+		"bmworkspace2023-WorkspaceDefaultSqlServer_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:bmworkspace2023.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"value": "https://bmdatalakestorage2023.dfs.core.windows.net/"
+		},
+		"bmworkspace2023-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://bmdatalakestorage2023.dfs.core.windows.net"
+		},
+		"ls_bmehubkv2023_properties_typeProperties_baseUrl": {
+			"value": "https://bmehubkeyvault2023.vault.azure.net/"
+		},
+		"Trigger 1_properties_typeProperties_scope": {
+			"value": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Storage/storageAccounts/bmdatalakestorage2023"
+		}
+	}
+}
