@@ -13,6 +13,7 @@
 			"executorMemory": "28g",
 			"executorCores": 4,
 			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
 			"conf": {
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
@@ -37,13 +38,14 @@
 				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
 				"auth": {
 					"type": "AAD",
-					"authResource": "https://dev.azuresynapse.net"
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
 				},
 				"sparkVersion": "3.3",
 				"nodeCount": 10,
 				"cores": 4,
 				"memory": 28,
-				"automaticScaleJobs": false
+				"extraHeader": null
 			},
 			"sessionKeepAliveTimeout": 30
 		},
@@ -52,8 +54,7 @@
 				"cell_type": "code",
 				"source": [
 					"print(\"hi\")"
-				],
-				"execution_count": null
+				]
 			}
 		]
 	}
