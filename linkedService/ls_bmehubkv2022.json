@@ -1,0 +1,11 @@
+{
+	"name": "ls_bmehubkv2022",
+	"type": "Microsoft.Synapse/workspaces/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://bmkeyvault2022.vault.azure.net"
+		}
+	}
+}

@@ -1,8 +1,8 @@
 {
-	"name": "az_table_connector",
+	"name": "eoy_confin",
 	"properties": {
 		"folder": {
-			"name": "ce_pipelines/common"
+			"name": "ce_pipelines/eoy/config"
 		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
@@ -21,7 +21,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "f21390cd-6c2d-4cff-9ea0-fc7e03739f65"
+				"spark.autotune.trackingId": "dabad168-ac2c-46e6-9aa5-26adc9888915"
 			}
 		},
 		"metadata": {
@@ -58,19 +58,8 @@
 		"cells": [
 			{
 				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
 				"source": [
-					"pip install azure-data-tables"
+					"%run ce_pipelines/common/config"
 				],
 				"execution_count": 1
 			},
@@ -88,37 +77,74 @@
 					}
 				},
 				"source": [
-					"from azure.data.tables import TableClient\r\n",
-					"\r\n",
-					"class TableConnector:\r\n",
-					"    def __init__(self,config):\r\n",
-					"        self.config = config\r\n",
-					"\r\n",
-					"        # Connect to Azure table\r\n",
-					"        connection_str = \"DefaultEndpointsProtocol=https;AccountName=\" + self.config.get(\r\n",
-					"            'storage.account_name') + \";AccountKey=\" + \\\r\n",
-					"                         self.config.get('storage.account_key') + \";EndpointSuffix=core.windows.net\"\r\n",
-					"\r\n",
-					"        self._table_service = TableClient.from_connection_string(connection_str,\r\n",
-					"                                                           table_name=self.config.get('storage.table_name'))\r\n",
-					"\r\n",
-					"\r\n",
-					"\r\n",
-					"    def search(self, partition_key, row_key,columns):\r\n",
-					"        filter = \"PartitionKey eq '{}' and RowKey eq '{}'\".format(partition_key,row_key)\r\n",
-					"\r\n",
-					"        query_result = self._table_service.query_entities(query_filter=filter, select=columns)\r\n",
-					"\r\n",
-					"\r\n",
-					"        result = {}\r\n",
-					"        for query in query_result:\r\n",
-					"            for col_names in columns:\r\n",
-					"                result[col_names] = query[col_names]\r\n",
-					"\r\n",
-					"        return  result\r\n",
-					""
+					"com_config = config"
 				],
 				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#import config as base_config\r\n",
+					"\r\n",
+					"config = {\r\n",
+					"    \"source_flag\": \"EOY\",\r\n",
+					"    \"storage.staging_dir_name\":\"data/staging/eoy\",\r\n",
+					"    \"storage.chunksize\":200,\r\n",
+					"    \"storage.landing_dir_name\":\"data/landing/eoy\",\r\n",
+					"    \"data.chunksize\":10000,\r\n",
+					"\r\n",
+					"    \"transformations\": {\r\n",
+					"        \"eoy\":{\r\n",
+					"            \"invalid_columns\":[], \r\n",
+					"            \"mappings\":[\r\n",
+					"                {\r\n",
+					"                    \"function\": \"get_org_key\",\r\n",
+					"                    \"src_column_names\": \"company_id\",\r\n",
+					"                    \"dst_column_names\": \"org_key\"\r\n",
+					"                },\r\n",
+					"                {\r\n",
+					"                    \"function\": \"get_emp_key\",\r\n",
+					"                    \"src_column_names\": \"entrepreneurs_id\",\r\n",
+					"                    \"dst_column_names\": \"per_key\"\r\n",
+					"                }\r\n",
+					"            ]\r\n",
+					"        }\r\n",
+					"    }\r\n",
+					"}\r\n",
+					"\r\n",
+					"#config.update(base_config)"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"config.update(com_config)\r\n",
+					"print(config)"
+				],
+				"execution_count": 4
 			}
 		]
 	}

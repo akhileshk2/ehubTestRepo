@@ -1,13 +1,13 @@
 {
-	"name": "ent_logger_config",
+	"name": "MainNB",
 	"properties": {
 		"folder": {
-			"name": "ce_pipelines/ent/config"
+			"name": "AK W"
 		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"bigDataPool": {
-			"referenceName": "bmsparkpool22",
+			"referenceName": "bmapachespark",
 			"type": "BigDataPoolReference"
 		},
 		"sessionProperties": {
@@ -21,7 +21,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "30d08bfd-863f-4632-858a-d7168e3583c1"
+				"spark.autotune.trackingId": "a3a73221-b179-4fb2-8536-6c17340a19f3"
 			}
 		},
 		"metadata": {
@@ -29,7 +29,7 @@
 			"synapse_widget": {
 				"version": "0.1"
 			},
-			"enableDebugMode": false,
+			"enableDebugMode": true,
 			"kernelspec": {
 				"name": "synapse_pyspark",
 				"display_name": "Synapse PySpark"
@@ -38,10 +38,10 @@
 				"name": "python"
 			},
 			"a365ComputeOptions": {
-				"id": "/subscriptions/8e862a61-456c-49b5-9e16-45c00c15686b/resourceGroups/synapsepoc/providers/Microsoft.Synapse/workspaces/bmworkspace2022/bigDataPools/bmsparkpool22",
-				"name": "bmsparkpool22",
+				"id": "/subscriptions/8e862a61-456c-49b5-9e16-45c00c15686b/resourceGroups/synapsepoc/providers/Microsoft.Synapse/workspaces/bmworkspace2022/bigDataPools/bmapachespark",
+				"name": "bmapachespark",
 				"type": "Spark",
-				"endpoint": "https://bmworkspace2022.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool22",
+				"endpoint": "https://bmworkspace2022.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmapachespark",
 				"auth": {
 					"type": "AAD",
 					"authResource": "https://dev.azuresynapse.net",
@@ -58,6 +58,13 @@
 		"cells": [
 			{
 				"cell_type": "code",
+				"source": [
+					"%run testNB"
+				],
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
 				"metadata": {
 					"jupyter": {
 						"source_hidden": false,
@@ -70,20 +77,9 @@
 					}
 				},
 				"source": [
-					"import logging\r\n",
-					"\r\n",
-					"# logger config\r\n",
-					"# log levels: debug, info, warning, error, critical\r\n",
-					"logFormatter = logging.Formatter('%(asctime)s | %(name)s | %(levelname)s | %(message)s',datefmt='%Y-%m-%d %H:%M:%S')\r\n",
-					"logger = logging.getLogger('ENT')\r\n",
-					"logger.setLevel(logging.DEBUG)\r\n",
-					"# stream logger\r\n",
-					"sh = logging.StreamHandler() # stream handler\r\n",
-					"sh.setFormatter(logFormatter)\r\n",
-					"sh.setLevel(logging.INFO)\r\n",
-					"logger.addHandler(sh)"
+					"add_one(55,45)"
 				],
-				"execution_count": 1
+				"execution_count": 11
 			}
 		]
 	}

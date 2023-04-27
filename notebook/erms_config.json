@@ -1,8 +1,8 @@
 {
-	"name": "ent_config",
+	"name": "erms_config",
 	"properties": {
 		"folder": {
-			"name": "ce_pipelines/ent/config"
+			"name": "ce_pipelines/erms/config"
 		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
@@ -15,13 +15,13 @@
 			"driverCores": 4,
 			"executorMemory": "28g",
 			"executorCores": 4,
-			"numExecutors": 1,
+			"numExecutors": 2,
 			"runAsWorkspaceSystemIdentity": false,
 			"conf": {
 				"spark.dynamicAllocation.enabled": "false",
-				"spark.dynamicAllocation.minExecutors": "1",
-				"spark.dynamicAllocation.maxExecutors": "1",
-				"spark.autotune.trackingId": "90f1c648-ab79-46bf-9e3e-ce3138cdf30c"
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "bbdbc9d6-f795-41e4-b04e-ec9c03ba366e"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"memory": 28,
 				"extraHeader": null
 			},
-			"sessionKeepAliveTimeout": 10
+			"sessionKeepAliveTimeout": 30
 		},
 		"cells": [
 			{
@@ -61,25 +61,7 @@
 				"source": [
 					"%run ce_pipelines/common/config"
 				],
-				"execution_count": 7
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"print(config)"
-				],
-				"execution_count": 8
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -97,7 +79,7 @@
 				"source": [
 					"com_config = config"
 				],
-				"execution_count": 9
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
@@ -113,30 +95,30 @@
 					}
 				},
 				"source": [
+					"#from ce_pipelines import config as base_config\r\n",
+					"\r\n",
 					"config = {\r\n",
-					"    \"source_flag\": \"ENT\",\r\n",
-					"    \"datetime_format\": \"%Y-%m-%d %H:%M:%S\",\r\n",
-					"        \r\n",
-					"    \"storage.staging_dir_name\":\"data/staging/ent\",\r\n",
+					"    \"source_flag\": \"ERMS\",\r\n",
+					"    \"datetime_original_format\": \"%Y-%m-%d %H:%M:%S\",\r\n",
+					"    \"datetime_new_format\": \"%Y%m%d\",\r\n",
+					"    \"datetime_default\": \"2021-07-01 00:00:00\",\r\n",
+					"\r\n",
+					"    \"storage.staging_dir_name\":\"staging/erms\",\r\n",
 					"    \"storage.chunksize\":200,\r\n",
-					"    \"storage.landing_dir_name\":\"data/landing/ent\",\r\n",
+					"    \"storage.landing_dir_name\":\"landing/erms\",\r\n",
 					"    \r\n",
 					"    \"data.chunksize\":10000,\r\n",
-					"        \r\n",
+					"\r\n",
+					"    \"storage.table_name\": \"ERMSData\",\r\n",
+					"\r\n",
 					"    \"transformations\": {\r\n",
-					"        \"ent\":{\r\n",
+					"        \"organizations_inc\":{\r\n",
 					"            \"invalid_columns\":[], \r\n",
 					"            \"mappings\":[\r\n",
-					"                \r\n",
 					"                {\r\n",
 					"                    \"function\": \"generate_org_id\",\r\n",
-					"                    \"src_column_names\": \"company_name\",\r\n",
+					"                    \"src_column_names\": [\"account_name\",\"parent_account\"],\r\n",
 					"                    \"dst_column_names\": \"org_id\"\r\n",
-					"                },\r\n",
-					"                {\r\n",
-					"                    \"function\": \"generate_per_id\",\r\n",
-					"                    \"src_column_names\": [\"entrepreneurs_name\",\"company_name\"],\r\n",
-					"                    \"dst_column_names\": \"per_id\"\r\n",
 					"                },\r\n",
 					"                {\r\n",
 					"                    \"function\": \"get_org_key\",\r\n",
@@ -144,31 +126,10 @@
 					"                    \"dst_column_names\": \"org_key\"\r\n",
 					"                },\r\n",
 					"                {\r\n",
-					"                    \"function\": \"get_emp_key\",\r\n",
-					"                    \"src_column_names\": \"per_id\",\r\n",
-					"                    \"dst_column_names\": \"per_key\"\r\n",
-					"                },\r\n",
-					"                {\r\n",
-					"                    \"function\": \"generate_event_key\",\r\n",
-					"                    \"src_column_names\": [\"source\",\"event_name\",\"event_area\",\"event_region\",\"event_year\"],\r\n",
-					"                    \"dst_column_names\": \"event_key\"\r\n",
-					"                },\r\n",
-					"                {\r\n",
-					"                    \"function\": \"list_social_media_ids\",\r\n",
-					"                    \"src_column_names\": [\"company_social_media\",\"company_username\"],\r\n",
-					"                    \"dst_column_names\": \"social_media\"\r\n",
-					"                },\r\n",
-					"                {\r\n",
-					"                    \"function\": \"prep_ey_industry\",\r\n",
-					"                    \"src_column_names\": \"ey_industry\",\r\n",
-					"                    \"dst_column_names\": \"ey_industry\"\r\n",
-					"                },\r\n",
-					"                {\r\n",
-					"                    \"function\": \"generate_sector_id\",\r\n",
-					"                    \"src_column_names\": \"ey_industry\",\r\n",
-					"                    \"dst_column_names\": \"sector_id\"\r\n",
+					"                    \"function\":\"map_types\",\r\n",
+					"                    \"src_column_names\": \"type\",\r\n",
+					"                    \"dst_column_names\": \"type\"\r\n",
 					"                }\r\n",
-					"                \r\n",
 					"            ]\r\n",
 					"        }   \r\n",
 					"    }\r\n",
@@ -176,7 +137,7 @@
 					"\r\n",
 					"#config.update(base_config)"
 				],
-				"execution_count": 10
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -195,7 +156,7 @@
 					"config.update(com_config)\r\n",
 					"print(config)"
 				],
-				"execution_count": 11
+				"execution_count": 7
 			}
 		]
 	}

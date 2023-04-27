@@ -7,7 +7,7 @@
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"bigDataPool": {
-			"referenceName": "bmsparkpool2023",
+			"referenceName": "bmsparkpool22",
 			"type": "BigDataPoolReference"
 		},
 		"sessionProperties": {
@@ -15,13 +15,13 @@
 			"driverCores": 4,
 			"executorMemory": "28g",
 			"executorCores": 4,
-			"numExecutors": 2,
+			"numExecutors": 1,
 			"runAsWorkspaceSystemIdentity": false,
 			"conf": {
 				"spark.dynamicAllocation.enabled": "false",
-				"spark.dynamicAllocation.minExecutors": "2",
-				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "cf1f5706-19b6-44cc-bf49-8b6039cc8b9c"
+				"spark.dynamicAllocation.minExecutors": "1",
+				"spark.dynamicAllocation.maxExecutors": "1",
+				"spark.autotune.trackingId": "50c6dd0a-1a4d-41e6-aea2-64c5fa9aac1a"
 			}
 		},
 		"metadata": {
@@ -38,30 +38,24 @@
 				"name": "python"
 			},
 			"a365ComputeOptions": {
-				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
-				"name": "bmsparkpool2023",
+				"id": "/subscriptions/8e862a61-456c-49b5-9e16-45c00c15686b/resourceGroups/synapsepoc/providers/Microsoft.Synapse/workspaces/bmworkspace2022/bigDataPools/bmsparkpool22",
+				"name": "bmsparkpool22",
 				"type": "Spark",
-				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"endpoint": "https://bmworkspace2022.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool22",
 				"auth": {
 					"type": "AAD",
 					"authResource": "https://dev.azuresynapse.net",
 					"authHeader": null
 				},
-				"sparkVersion": "3.3",
-				"nodeCount": 10,
+				"sparkVersion": "3.2",
+				"nodeCount": 3,
 				"cores": 4,
 				"memory": 28,
 				"extraHeader": null
 			},
-			"sessionKeepAliveTimeout": 30
+			"sessionKeepAliveTimeout": 10
 		},
 		"cells": [
-			{
-				"cell_type": "code",
-				"source": [
-					"%run ce_pipelines/common/transformation_controller"
-				]
-			},
 			{
 				"cell_type": "code",
 				"metadata": {
@@ -77,7 +71,8 @@
 				},
 				"source": [
 					"%run ce_pipelines/ent/config/ent_config"
-				]
+				],
+				"execution_count": 1
 			},
 			{
 				"cell_type": "code",
@@ -93,8 +88,9 @@
 					}
 				},
 				"source": [
-					"print(config)"
-				]
+					"%run ce_pipelines/common/transformation_controller"
+				],
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
@@ -180,7 +176,7 @@
 					"        return text\r\n",
 					""
 				],
-				"execution_count": 6
+				"execution_count": 3
 			}
 		]
 	}

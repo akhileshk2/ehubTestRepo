@@ -1,8 +1,8 @@
 {
-	"name": "source_downloader",
+	"name": "crunchbase_logger_config",
 	"properties": {
 		"folder": {
-			"name": "ce_pipelines/crunchbasse/extraction_operator"
+			"name": "ce_pipelines/crunchbasse/config"
 		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
@@ -21,7 +21,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "815f82b7-4bed-446a-a90d-718a2bd5bc9a"
+				"spark.autotune.trackingId": "165408ea-b68a-49e3-9df7-253242dba955"
 			}
 		},
 		"metadata": {
@@ -59,32 +59,20 @@
 			{
 				"cell_type": "code",
 				"source": [
-					"import requests\r\n",
-					"import tarfile\r\n",
-					"from io import BytesIO\r\n",
-					"import os\r\n",
+					"import logging\r\n",
 					"\r\n",
-					"class DataDownloader:\r\n",
-					"    \r\n",
-					"    def __init__(self, config, logger):\r\n",
-					"        self._config = config\r\n",
-					"        self._logger = logger\r\n",
-					"        \r\n",
-					"    def download_data(self, dir_path):\r\n",
-					"        response = requests.get(self._config['crunchbase_uri'])\r\n",
-					"        if response.status_code != 200:\r\n",
-					"            raise Exception(f\"Crunchbase Daily Data Export download failed - {response.status_code}, {response.content} \")\r\n",
-					"        \r\n",
-					"        self._logger.info(f\"Crunchbase Daily Data Export download completed.\")\r\n",
-					"        data = BytesIO(response.content)\r\n",
-					"        with tarfile.open(fileobj=data) as tar:\r\n",
-					"            members = [tar.getmember(member_name + '.csv') for member_name in self._config['entity_files']] \r\n",
-					"            tar.extractall(dir_path, members=members)\r\n",
-					"        data.close()\r\n",
-					"        self._logger.info(f\"Crunchbase Daily Data Export extraction completed.\")\r\n",
-					""
+					"# logger config\r\n",
+					"# log levels: debug, info, warning, error, critical\r\n",
+					"logFormatter = logging.Formatter('%(asctime)s | %(name)s | %(levelname)s | %(message)s',datefmt='%Y-%m-%d %H:%M:%S')\r\n",
+					"logger = logging.getLogger('Crunchbase Operator')\r\n",
+					"logger.setLevel(logging.DEBUG)\r\n",
+					"# stream logger\r\n",
+					"sh = logging.StreamHandler() # stream handler\r\n",
+					"sh.setFormatter(logFormatter)\r\n",
+					"sh.setLevel(logging.INFO)\r\n",
+					"logger.addHandler(sh)"
 				],
-				"execution_count": 6
+				"execution_count": 5
 			}
 		]
 	}

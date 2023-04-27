@@ -1,8 +1,8 @@
 {
-	"name": "eoy_run",
+	"name": "erms_run",
 	"properties": {
 		"folder": {
-			"name": "ce_pipelines/eoy/load_operator"
+			"name": "ce_pipelines/erms/extraction_operator"
 		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
@@ -21,7 +21,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "6129a2df-6bfc-42c1-a5dd-ec9a5faaf786"
+				"spark.autotune.trackingId": "fbdd9049-0ec1-4ca4-b75c-f3536ca8ace6"
 			}
 		},
 		"metadata": {
@@ -59,8 +59,9 @@
 			{
 				"cell_type": "code",
 				"source": [
-					"%run ce_pipelines/common/neo_connector"
-				]
+					"%run ce_pipelines/common/az_table_connector"
+				],
+				"execution_count": 1
 			},
 			{
 				"cell_type": "code",
@@ -77,7 +78,8 @@
 				},
 				"source": [
 					"pip install azure-storage-file-datalake"
-				]
+				],
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
@@ -94,7 +96,8 @@
 				},
 				"source": [
 					"%run ce_pipelines/common/datalake_connector"
-				]
+				],
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -110,8 +113,9 @@
 					}
 				},
 				"source": [
-					"%run ce_pipelines/eoy/config/eoy_config"
-				]
+					"%run ce_pipelines/erms/config/erms_config"
+				],
+				"execution_count": 1
 			},
 			{
 				"cell_type": "code",
@@ -127,8 +131,9 @@
 					}
 				},
 				"source": [
-					"%run ce_pipelines/eoy/config/logger_config"
-				]
+					"%run ce_pipelines/erms/config/erms_logger_config"
+				],
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
@@ -144,8 +149,9 @@
 					}
 				},
 				"source": [
-					"# %run ce_pipelines/eoy/load_operator/queries/query_selector"
-				]
+					"%run ce_pipelines/common/etl_status_recorder"
+				],
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -161,8 +167,9 @@
 					}
 				},
 				"source": [
-					"%run ce_pipelines/eoy/load_operator/queries/eoy_cql"
-				]
+					"%run ce_pipelines/common/ETL_Logger"
+				],
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -178,70 +185,57 @@
 					}
 				},
 				"source": [
-					"import sys\r\n",
+					"%run ce_pipelines/erms/extraction_operator/organizations/extractor"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
 					"import tempfile\r\n",
 					"import os\r\n",
-					"from notebookutils import mssparkutils\r\n",
+					"import shutil\r\n",
+					"from datetime import datetime\r\n",
 					"\r\n",
-					"def execute(entities=['eoy'], **kwargs):\r\n",
+					"#from ce_pipelines import DataLakeAdapter\r\n",
+					"#from ce_pipelines.erms import config, logger\r\n",
+					"#from ce_pipelines import ETLStatusRecorder\r\n",
+					"#from ce_pipelines import ETLlogger\r\n",
 					"\r\n",
+					"#from .organizations import OrganizationsDataExtractor\r\n",
+					"\r\n",
+					"def execute(**kwargs):\r\n",
 					"    # Update Default Config - Optional\r\n",
 					"    config.update(kwargs)\r\n",
+					"\r\n",
+					"    esr = ETLStatusRecorder(config, logger)\r\n",
+					"    last_successfully_executed_at = esr.get_last_successful_execution_at() \r\n",
+					"\r\n",
+					"    if last_successfully_executed_at:\r\n",
+					"        config.update({'start_date': last_successfully_executed_at})\r\n",
 					"    \r\n",
-					"    graph = GraphAdapter(config=config, logger=logger)\r\n",
-					"    data_lake_conn = DataLakeAdapter(config=config, logger=logger)\r\n",
+					"    # Initialize Staging Location\r\n",
+					"    staging = DataLakeAdapter(config=config, logger=logger, env='staging')\r\n",
+					"    organizations = OrganizationsDataExtractor(staging, config=config, logger=logger).extract()\r\n",
+					"    logger.info(f\"Data extraction completed.\")\r\n",
 					"\r\n",
-					"    entityquery_dict = {\"eoy\":eoy_cypher}\r\n",
+					"    # Update logs to Azure Table\r\n",
 					"\r\n",
-					"    storageaccountname = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.account_name\"],config[\"linkedservice.keyvaultls\"])\r\n",
-					"    logger.info(f\"Storage Account Name - {storageaccountname} - Started.\")\r\n",
-					"    storagecontainername = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.container_name\"],config[\"linkedservice.keyvaultls\"])\r\n",
-					"    logger.info(f\"Storage Container Name - {storagecontainername} - Started.\")\r\n",
-					"    storageaccountkey = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.account_key\"],config[\"linkedservice.keyvaultls\"])\r\n",
-					"    print(storageaccountkey)\r\n",
-					"\r\n",
-					"    for entity in entities:\r\n",
-					"        \r\n",
-					"        try:\r\n",
-					"            logger.info(f\"Load - {entity} - Started.\")\r\n",
-					"            remote_files = data_lake_conn.get_files(env='landing', entity=entity)\r\n",
-					"            logger.info(f\"remote_files: {remote_files} Load \")\r\n",
-					"            for remote_file in remote_files:\r\n",
-					"                logger.info(f\"File Name: {remote_file} Load \")\r\n",
-					"                sas_url = data_lake_conn.generate_sas_url(remote_file)\r\n",
-					"                logger.info(f\"File sas_url: {sas_url} \")\r\n",
-					"                if sas_url:\r\n",
-					"                    logger.info(f\"File sas_url: {sas_url} \")\r\n",
-					"                    query_template = entityquery_dict[entity]\r\n",
-					"                    query = query_template.replace('<<SAS_URL>>', sas_url)\r\n",
-					"                    logger.info(f\"For {entity} query - {query}.\")\r\n",
-					"                    if query:    \r\n",
-					"                        graph.execute_query(query)\r\n",
-					"                    \r\n",
-					"            logger.info(f\"Load - {entity} - Completed.\")\r\n",
-					"        except Exception as e:\r\n",
-					"            logger.error(str(e))\r\n",
-					"            logger.info(f\"Load - {entity} - Failed.\")\r\n",
-					"\r\n",
-					"    graph.close()"
-				]
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"execute()"
-				]
+					"    etl_logger = ETLlogger(_config = config)\r\n",
+					"    etl_logger.update_logs(task = \"Extraction\",result = \"Success\")"
+				],
+				"execution_count": 7
 			}
 		]
 	}

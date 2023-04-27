@@ -1,13 +1,13 @@
 {
-	"name": "etl_status_recorder",
+	"name": "etl_status_recorder_",
 	"properties": {
 		"folder": {
-			"name": "ce_pipelines/common"
+			"name": "AK W"
 		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"bigDataPool": {
-			"referenceName": "bmsparkpool22",
+			"referenceName": "bmapachespark",
 			"type": "BigDataPoolReference"
 		},
 		"sessionProperties": {
@@ -21,7 +21,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "b99890e8-bbe0-4e0a-a7cf-daa7d06a6efd"
+				"spark.autotune.trackingId": "dbf7ab8f-b82b-4c58-a3f7-e4ee4e5eb1bb"
 			}
 		},
 		"metadata": {
@@ -29,7 +29,7 @@
 			"synapse_widget": {
 				"version": "0.1"
 			},
-			"enableDebugMode": false,
+			"enableDebugMode": true,
 			"kernelspec": {
 				"name": "synapse_pyspark",
 				"display_name": "Synapse PySpark"
@@ -38,10 +38,10 @@
 				"name": "python"
 			},
 			"a365ComputeOptions": {
-				"id": "/subscriptions/8e862a61-456c-49b5-9e16-45c00c15686b/resourceGroups/synapsepoc/providers/Microsoft.Synapse/workspaces/bmworkspace2022/bigDataPools/bmsparkpool22",
-				"name": "bmsparkpool22",
+				"id": "/subscriptions/8e862a61-456c-49b5-9e16-45c00c15686b/resourceGroups/synapsepoc/providers/Microsoft.Synapse/workspaces/bmworkspace2022/bigDataPools/bmapachespark",
+				"name": "bmapachespark",
 				"type": "Spark",
-				"endpoint": "https://bmworkspace2022.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool22",
+				"endpoint": "https://bmworkspace2022.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmapachespark",
 				"auth": {
 					"type": "AAD",
 					"authResource": "https://dev.azuresynapse.net",
@@ -58,21 +58,10 @@
 		"cells": [
 			{
 				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
 				"source": [
 					"%run neo_connector"
 				],
-				"execution_count": 1
+				"execution_count": 34
 			},
 			{
 				"cell_type": "code",
@@ -135,7 +124,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": 2
+				"execution_count": 35
 			}
 		]
 	}

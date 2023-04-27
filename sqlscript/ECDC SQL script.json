@@ -1,0 +1,17 @@
+{
+	"name": "ECDC SQL script",
+	"properties": {
+		"content": {
+			"query": "\n\nCREATE DATABASE SCOPED CREDENTIAL ManagedIdentity\nWITH\n    IDENTITY ='Managed Identity'\n    GO\n\n\n\nCREATE EXTERNAL DATA SOURCE DemoDataSource\nWITH\n(\n    LOCATION='https://bmdatalakestorage.dfs.core.windows.net',\n    CREDENTIAL=Managedidentity\n);\n\n\n\n\n\nCREATE EXTERNAL TABLE  ECDC_Deathdetails \nWITH\n(\n  LOCATION='bmfilestorage/',\n      DATA_SOURCE='ECDC',\n  FILE_FORMAT= 'CSV'\n)\nAS\n\nSELECT\n    month,sum(deaths) as Count_Deaths\nFROM\n    OPENROWSET(\n        BULK 'https://bmdatalakestorage.dfs.core.windows.net/bmfilestorage/ECDC.csv',\n        FORMAT = 'CSV',\n        HEADER_ROW=TRUE,\n        PARSER_VERSION = '2.0'\n    ) AS [result] group by month \n\n\n\n\n\n\nSELECT\n    TOP 10 *\nFROM\n    OPENROWSET(\n        BULK 'https://bmdatalakestorage.dfs.core.windows.net/bmfilestorage/ECDC.csv',\n        FORMAT = 'CSV',\n        HEADER_ROW=TRUE,\n        PARSER_VERSION = '2.0'\n    ) AS [result] group by month \n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

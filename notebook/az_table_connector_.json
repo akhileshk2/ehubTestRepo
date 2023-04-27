@@ -1,13 +1,13 @@
 {
-	"name": "az_table_connector",
+	"name": "az_table_connector_",
 	"properties": {
 		"folder": {
-			"name": "ce_pipelines/common"
+			"name": "AK W"
 		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"bigDataPool": {
-			"referenceName": "bmsparkpool22",
+			"referenceName": "bmapachespark",
 			"type": "BigDataPoolReference"
 		},
 		"sessionProperties": {
@@ -21,7 +21,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "f21390cd-6c2d-4cff-9ea0-fc7e03739f65"
+				"spark.autotune.trackingId": "ab53d5d2-75cd-4285-a661-adbc18dd4fd4"
 			}
 		},
 		"metadata": {
@@ -38,10 +38,10 @@
 				"name": "python"
 			},
 			"a365ComputeOptions": {
-				"id": "/subscriptions/8e862a61-456c-49b5-9e16-45c00c15686b/resourceGroups/synapsepoc/providers/Microsoft.Synapse/workspaces/bmworkspace2022/bigDataPools/bmsparkpool22",
-				"name": "bmsparkpool22",
+				"id": "/subscriptions/8e862a61-456c-49b5-9e16-45c00c15686b/resourceGroups/synapsepoc/providers/Microsoft.Synapse/workspaces/bmworkspace2022/bigDataPools/bmapachespark",
+				"name": "bmapachespark",
 				"type": "Spark",
-				"endpoint": "https://bmworkspace2022.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool22",
+				"endpoint": "https://bmworkspace2022.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmapachespark",
 				"auth": {
 					"type": "AAD",
 					"authResource": "https://dev.azuresynapse.net",
@@ -71,8 +71,7 @@
 				},
 				"source": [
 					"pip install azure-data-tables"
-				],
-				"execution_count": 1
+				]
 			},
 			{
 				"cell_type": "code",
@@ -118,7 +117,7 @@
 					"        return  result\r\n",
 					""
 				],
-				"execution_count": 2
+				"execution_count": 19
 			}
 		]
 	}

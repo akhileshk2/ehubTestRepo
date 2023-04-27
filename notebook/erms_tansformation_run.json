@@ -1,8 +1,8 @@
 {
-	"name": "ent_run",
+	"name": "erms_tansformation_run",
 	"properties": {
 		"folder": {
-			"name": "ce_pipelines/ent/transformation_operator"
+			"name": "ce_pipelines/erms/transformation_operator"
 		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
@@ -15,13 +15,13 @@
 			"driverCores": 4,
 			"executorMemory": "28g",
 			"executorCores": 4,
-			"numExecutors": 1,
+			"numExecutors": 2,
 			"runAsWorkspaceSystemIdentity": false,
 			"conf": {
 				"spark.dynamicAllocation.enabled": "false",
-				"spark.dynamicAllocation.minExecutors": "1",
-				"spark.dynamicAllocation.maxExecutors": "1",
-				"spark.autotune.trackingId": "6ef34647-78a7-43e5-a2cd-eac2531872f9"
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "d4c628eb-ceb6-4bd5-8dec-4792dcdd3104"
 			}
 		},
 		"metadata": {
@@ -50,9 +50,10 @@
 				"sparkVersion": "3.2",
 				"nodeCount": 3,
 				"cores": 4,
-				"memory": 28
+				"memory": 28,
+				"extraHeader": null
 			},
-			"sessionKeepAliveTimeout": 10
+			"sessionKeepAliveTimeout": 30
 		},
 		"cells": [
 			{
@@ -69,9 +70,8 @@
 					}
 				},
 				"source": [
-					"%run ce_pipelines/ent/transformation_operator/ent_transformation"
-				],
-				"execution_count": 1
+					"%run ce_pipelines/erms/transformation_operator/erms_transformation"
+				]
 			},
 			{
 				"cell_type": "code",
@@ -88,8 +88,7 @@
 				},
 				"source": [
 					"%run ce_pipelines/common/datalake_connector"
-				],
-				"execution_count": 2
+				]
 			},
 			{
 				"cell_type": "code",
@@ -106,8 +105,7 @@
 				},
 				"source": [
 					"pip install azure-storage-file-datalake"
-				],
-				"execution_count": 3
+				]
 			},
 			{
 				"cell_type": "code",
@@ -123,9 +121,8 @@
 					}
 				},
 				"source": [
-					"%run ce_pipelines/ent/config/ent_config"
-				],
-				"execution_count": 4
+					"%run ce_pipelines/erms/config/erms_config"
+				]
 			},
 			{
 				"cell_type": "code",
@@ -141,9 +138,25 @@
 					}
 				},
 				"source": [
-					"%run ce_pipelines/ent/config/ent_logger_config"
-				],
-				"execution_count": 5
+					"%run ce_pipelines/erms/config/erms_logger_config"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/common/ETL_Logger"
+				]
 			},
 			{
 				"cell_type": "code",
@@ -162,15 +175,16 @@
 					"import sys\r\n",
 					"import tempfile\r\n",
 					"import os\r\n",
+					"from datetime import datetime\r\n",
 					"\r\n",
 					"#from ce_pipelines import DataLakeAdapter\r\n",
-					"#from ce_pipelines.eoy import config,logger\r\n",
-					"\r\n",
+					"#from ce_pipelines.erms import config,logger\r\n",
+					"#from ce_pipelines import ETLlogger\r\n",
 					"\r\n",
 					"#from .transformations import Transformations\r\n",
 					"\r\n",
-					"def execute(entities=['ent'],**kwargs):\r\n",
-					"        \r\n",
+					"def execute(entities=['organizations_inc'], **kwargs):\r\n",
+					"\r\n",
 					"    storageaccountname = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.account_name\"],config[\"linkedservice.keyvaultls\"])\r\n",
 					"    print(storageaccountname)\r\n",
 					"    storagecontainername = mssparkutils.credentials.getSecret(config[\"keyvault.name\"],config[\"storage.container_name\"],config[\"linkedservice.keyvaultls\"])\r\n",
@@ -201,21 +215,38 @@
 					"            print(\"myfile\",transformed_file_path)\r\n",
 					"            # data_lake_conn.split_upload_file_from_local(transformed_file_path, entity, env='landing')\r\n",
 					"            DataLakeAdapter(config=config, logger=logger, env='landing', entity=entity).split_upload_file_from_local(transformed_file_path, entity, env='landing')\r\n",
+					"      \r\n",
+					"       # Delete temporary files\r\n",
+					"       # for local_temp_file_path in local_temp_file_paths:\r\n",
+					"       #     if os.path.exists(local_temp_file_path):\r\n",
+					"       #         os.remove(local_temp_file_path)\r\n",
+					"       #         logger.info(f\"File deleted - {local_temp_file_path}\")\r\n",
+					"       #     else:\r\n",
+					"       #         logger.info(f\"File doesn't exist - {local_temp_file_path}\")\r\n",
 					"\r\n",
-					"        \r\n",
-					"        # # Delete temporary files\r\n",
+					"       # logger.info(f\"Transformation - {entity} - Completed.\")\r\n",
 					"\r\n",
-					"        # #for local_temp_file_path in local_temp_file_paths:\r\n",
-					"        #     #if os.path.exists(local_temp_file_path):\r\n",
-					"        #        # os.remove(local_temp_file_path)\r\n",
-					"        #         #logger.info(f\"File deleted - {local_temp_file_path}\")\r\n",
-					"        #     #else:\r\n",
-					"        #         #logger.info(f\"File doesn't exist - {local_temp_file_path}\")\r\n",
-					"\r\n",
-					"        # #logger.info(f\"Transformation - {entity} - Completed.\")\r\n",
-					""
-				],
-				"execution_count": 6
+					"        # Update logs to Azure Table\r\n",
+					"        etl_logger = ETLlogger(_config=config)\r\n",
+					"        etl_logger.update_logs(task=\"Transformation\", result=\"Success\")"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"execute()"
+				]
 			}
 		]
 	}

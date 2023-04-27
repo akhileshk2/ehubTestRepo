@@ -2,12 +2,12 @@
 	"name": "extractor",
 	"properties": {
 		"folder": {
-			"name": "ce_pipelines/crunchbase/extraction_operator/organizations"
+			"name": "ce_pipelines/erms/extraction_operator/organizations"
 		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"bigDataPool": {
-			"referenceName": "bmsparkpool2023",
+			"referenceName": "bmsparkpool22",
 			"type": "BigDataPoolReference"
 		},
 		"sessionProperties": {
@@ -21,7 +21,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "c24da44c-bf53-4708-854a-a0444f70f676"
+				"spark.autotune.trackingId": "dcaba347-55f3-4361-9145-720414160e49"
 			}
 		},
 		"metadata": {
@@ -38,17 +38,17 @@
 				"name": "python"
 			},
 			"a365ComputeOptions": {
-				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
-				"name": "bmsparkpool2023",
+				"id": "/subscriptions/8e862a61-456c-49b5-9e16-45c00c15686b/resourceGroups/synapsepoc/providers/Microsoft.Synapse/workspaces/bmworkspace2022/bigDataPools/bmsparkpool22",
+				"name": "bmsparkpool22",
 				"type": "Spark",
-				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"endpoint": "https://bmworkspace2022.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool22",
 				"auth": {
 					"type": "AAD",
 					"authResource": "https://dev.azuresynapse.net",
 					"authHeader": null
 				},
-				"sparkVersion": "3.3",
-				"nodeCount": 10,
+				"sparkVersion": "3.2",
+				"nodeCount": 3,
 				"cores": 4,
 				"memory": 28,
 				"extraHeader": null
@@ -58,25 +58,56 @@
 		"cells": [
 			{
 				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"pip install azure-data-tables"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
 				"source": [
 					"import os\r\n",
-					"import pandas as pd \r\n",
-					"from datetime import datetime, timedelta \r\n",
+					"import ast\r\n",
+					"import pandas as pd\r\n",
+					"from datetime import datetime, timedelta\r\n",
 					"import io\r\n",
+					"#from azure.data.tables import TableClient\r\n",
+					"\r\n",
+					"\r\n",
 					"\r\n",
 					"class OrganizationsDataExtractor:\r\n",
-					"\r\n",
 					"    entity = \"organizations\"\r\n",
-					"    \r\n",
+					"\r\n",
 					"    def __init__(self, staging, config, logger):\r\n",
 					"        self._config = config\r\n",
 					"        self._logger = logger\r\n",
 					"        self._staging = staging\r\n",
 					"        self._data = {\r\n",
-					"            \"organizations_inc\": pd.DataFrame(),\r\n",
-					"            \"organizations_geo_inc\": pd.DataFrame()\r\n",
+					"            \"organizations_inc\": pd.DataFrame()\r\n",
 					"        }\r\n",
-					"    \r\n",
+					"\r\n",
 					"    def _upload(self):\r\n",
 					"        for output_entity, df in self._data.items():\r\n",
 					"            if not df.empty:\r\n",
@@ -85,36 +116,44 @@
 					"                self._staging.upload_file(f'{output_entity}.csv', data, 'staging')\r\n",
 					"                data.close()\r\n",
 					"\r\n",
-					"    def extract(self, dir_path:str):\r\n",
-					"        \r\n",
-					"        from_date = self._config.get('start_date', (datetime.now() - timedelta(days=1)).strftime(self._config['datetime_format']))\r\n",
-					"        to_date = self._config.get('end_date', None)\r\n",
+					"    def extract(self):\r\n",
+					"        try:\r\n",
+					"            \"\"\"Connect to Azure table\"\"\"\r\n",
+					"            connection_str = \"DefaultEndpointsProtocol=https;AccountName=\" + self._config.get('storage.account_name') + \";AccountKey=\" + \\\r\n",
+					"                   self._config.get('storage.account_key') + \";EndpointSuffix=core.windows.net\"\r\n",
 					"\r\n",
-					"        file_path = os.path.join(dir_path, f\"{self.entity}.csv\")\r\n",
-					"        \r\n",
-					"        filtered_chunks = []\r\n",
-					"        data_chunks = pd.read_csv(file_path, chunksize=10000)\r\n",
-					"        for data_chunk in data_chunks:\r\n",
-					"            data_chunk['updated_at'] = pd.to_datetime(data_chunk['updated_at'], format=self._config['datetime_format'])\r\n",
-					"            if to_date:\r\n",
-					"                filtered_chunks.append(data_chunk[(data_chunk['updated_at'] >= from_date) & (data_chunk['updated_at'] < to_date)])\r\n",
-					"            else:\r\n",
-					"                filtered_chunks.append(data_chunk[(data_chunk['updated_at'] >= from_date)])\r\n",
+					"            table_service = TableClient.from_connection_string(connection_str, table_name=self._config.get('storage.table_name'))\r\n",
+					"\r\n",
+					"            \"\"\"Last date of extraction in string\"\"\"\r\n",
+					"            reference_partition_key = self._config.get('start_date', self._config['datetime_default'])\r\n",
+					"            reference_partition_key = datetime.strptime(reference_partition_key, self._config.get(\"datetime_original_format\")\r\n",
+					"                                                        ).strftime(self._config.get(\"datetime_new_format\"))\r\n",
+					"\r\n",
+					"            \"\"\"Query results\"\"\"\r\n",
+					"            query_results = table_service.query_entities(\"PartitionKey gt '{}'\".format(reference_partition_key))\r\n",
+					"\r\n",
+					"            \"\"\"Convert to df\"\"\"\r\n",
+					"            result_list = [ast.literal_eval(result['Result']) for result in query_results]\r\n",
+					"\r\n",
+					"            result_df = pd.DataFrame(result_list)\r\n",
+					"            if not result_df.empty:\r\n",
+					"                result_df = result_df[~result_df['type'].isin(['Localization'])]\r\n",
+					"\r\n",
+					"        except Exception as err:\r\n",
+					"            raise Exception('Error in extracting data from azure table:{}'.format(err))\r\n",
 					"\r\n",
 					"        ids = set()\r\n",
-					"        if filtered_chunks:\r\n",
-					"            self._data['organizations_inc'] = pd.concat(filtered_chunks, ignore_index=True)\r\n",
-					"            self._extract_geo()\r\n",
+					"        if not result_df.empty:\r\n",
+					"            self._data['organizations_inc'] = result_df\r\n",
 					"            self._upload()\r\n",
-					"            ids = set(self._data['organizations_inc']['uuid'])\r\n",
-					"\r\n",
-					"        self._logger.info(f'{len(ids)} records extracted and staged from entity - {self.entity}')\r\n",
+					"            \r\n",
+					"        self._logger.info(f'{result_df.shape[0]} records extracted and staged from entity - {self.entity}')\r\n",
 					"        return ids\r\n",
-					"    \r\n",
-					"    def _extract_geo(self):\r\n",
-					"        self._data['organizations_geo_inc'] = self._data['organizations_inc'][['country_code','region','city', 'uuid']].dropna(how='any', subset=['country_code']).groupby(['country_code','region','city'])['uuid'].apply(lambda x: ','.join(list(x))).reset_index(name='uuid')\r\n",
-					"        self._data['organizations_inc'].drop(columns=['country_code','region','city'], inplace=True)        "
-				]
+					"\r\n",
+					"\r\n",
+					"        "
+				],
+				"execution_count": 3
 			}
 		]
 	}

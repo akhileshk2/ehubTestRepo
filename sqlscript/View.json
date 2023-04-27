@@ -1,0 +1,17 @@
+{
+	"name": "View",
+	"properties": {
+		"content": {
+			"query": "USE 'severless sql pool(SQL)'\n\nCREATE VIEW test\nAS\n\n-- This is auto-generated code\nSELECT *\nFROM\n    OPENROWSET(\n        BULK 'https://bmdatalakestorage.dfs.core.windows.net/bmfilestorage/taxi_zone.csv',\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0',\n        HEADER_ROW=TRUE\n    ) AS [result]\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "serverless sql pool",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

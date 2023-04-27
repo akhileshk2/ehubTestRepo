@@ -7,7 +7,7 @@
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"bigDataPool": {
-			"referenceName": "bmsparkpool2023",
+			"referenceName": "bmsparkpool22",
 			"type": "BigDataPoolReference"
 		},
 		"sessionProperties": {
@@ -21,7 +21,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "1",
 				"spark.dynamicAllocation.maxExecutors": "1",
-				"spark.autotune.trackingId": "2f0c0ce8-b941-432d-9b3c-019a428b2ba6"
+				"spark.autotune.trackingId": "fbd84a26-9c35-4ad9-9f28-4073e51e3b11"
 			}
 		},
 		"metadata": {
@@ -38,30 +38,29 @@
 				"name": "python"
 			},
 			"a365ComputeOptions": {
-				"id": "/subscriptions/a940a49d-4f38-49d5-8ee3-af225083b0bc/resourceGroups/EcosystemHub/providers/Microsoft.Synapse/workspaces/bmworkspace2023/bigDataPools/bmsparkpool2023",
-				"name": "bmsparkpool2023",
+				"id": "/subscriptions/8e862a61-456c-49b5-9e16-45c00c15686b/resourceGroups/synapsepoc/providers/Microsoft.Synapse/workspaces/bmworkspace2022/bigDataPools/bmsparkpool22",
+				"name": "bmsparkpool22",
 				"type": "Spark",
-				"endpoint": "https://bmworkspace2023.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool2023",
+				"endpoint": "https://bmworkspace2022.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool22",
 				"auth": {
 					"type": "AAD",
 					"authResource": "https://dev.azuresynapse.net",
 					"authHeader": null
 				},
-				"sparkVersion": "3.3",
-				"nodeCount": 10,
+				"sparkVersion": "3.2",
+				"nodeCount": 3,
 				"cores": 4,
 				"memory": 28,
 				"extraHeader": null
 			},
-			"sessionKeepAliveTimeout": 30
+			"sessionKeepAliveTimeout": 10
 		},
 		"cells": [
 			{
 				"cell_type": "code",
 				"source": [
 					"%run ce_pipelines/common/neo_connector"
-				],
-				"execution_count": 18
+				]
 			},
 			{
 				"cell_type": "code",
@@ -78,8 +77,7 @@
 				},
 				"source": [
 					"pip install azure-storage-file-datalake"
-				],
-				"execution_count": 11
+				]
 			},
 			{
 				"cell_type": "code",
@@ -96,8 +94,7 @@
 				},
 				"source": [
 					"%run ce_pipelines/common/datalake_connector"
-				],
-				"execution_count": 12
+				]
 			},
 			{
 				"cell_type": "code",
@@ -114,8 +111,7 @@
 				},
 				"source": [
 					"%run ce_pipelines/ent/config/ent_config"
-				],
-				"execution_count": 13
+				]
 			},
 			{
 				"cell_type": "code",
@@ -133,7 +129,7 @@
 				"source": [
 					"%run ce_pipelines/ent/config/ent_logger_config"
 				],
-				"execution_count": 14
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
@@ -151,7 +147,7 @@
 				"source": [
 					"%run ce_pipelines/ent/load_operator/queries/ent_cql"
 				],
-				"execution_count": 15
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -226,7 +222,7 @@
 					"\r\n",
 					"    graph.close()"
 				],
-				"execution_count": 19
+				"execution_count": 7
 			},
 			{
 				"cell_type": "code",
@@ -243,8 +239,7 @@
 				},
 				"source": [
 					"execute()"
-				],
-				"execution_count": 20
+				]
 			}
 		]
 	}

@@ -1,0 +1,17 @@
+{
+	"name": "Taxi zone SQL script",
+	"properties": {
+		"content": {
+			"query": "CREATE EXTERNAL TABLE [KC].[taxi_zone]\n(\nLocationID\tINT,\nBorough\tvarchar,\nZone\tvarchar,\nservice_zone varchar\n)\nWITH\n(\n\tLOCATION = 'abfss://bmfilestorage@bmdatalakestorage.dfs.core.windows.net/taxi_zone.csv',\n\tDATA_SOURCE = \"BLOB_STORAGE\",\n\tFILE_FORMAT = \"CSV\"\n)\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "serverless sql pool",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

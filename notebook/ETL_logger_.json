@@ -1,13 +1,13 @@
 {
-	"name": "ETL_Logger",
+	"name": "ETL_logger_",
 	"properties": {
 		"folder": {
-			"name": "ce_pipelines/common"
+			"name": "AK W"
 		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"bigDataPool": {
-			"referenceName": "bmsparkpool22",
+			"referenceName": "bmapachespark",
 			"type": "BigDataPoolReference"
 		},
 		"sessionProperties": {
@@ -21,7 +21,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "b2da662c-4d92-45d2-8dfc-d443871b43b7"
+				"spark.autotune.trackingId": "6f3d0f72-3deb-4766-843d-99f1de920e54"
 			}
 		},
 		"metadata": {
@@ -38,10 +38,10 @@
 				"name": "python"
 			},
 			"a365ComputeOptions": {
-				"id": "/subscriptions/8e862a61-456c-49b5-9e16-45c00c15686b/resourceGroups/synapsepoc/providers/Microsoft.Synapse/workspaces/bmworkspace2022/bigDataPools/bmsparkpool22",
-				"name": "bmsparkpool22",
+				"id": "/subscriptions/8e862a61-456c-49b5-9e16-45c00c15686b/resourceGroups/synapsepoc/providers/Microsoft.Synapse/workspaces/bmworkspace2022/bigDataPools/bmapachespark",
+				"name": "bmapachespark",
 				"type": "Spark",
-				"endpoint": "https://bmworkspace2022.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool22",
+				"endpoint": "https://bmworkspace2022.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmapachespark",
 				"auth": {
 					"type": "AAD",
 					"authResource": "https://dev.azuresynapse.net",
@@ -58,17 +58,6 @@
 		"cells": [
 			{
 				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
 				"source": [
 					"import json\r\n",
 					"from datetime import datetime\r\n",
@@ -99,7 +88,7 @@
 					"\r\n",
 					"        self.table_service.create_entity(entity=entity_values)"
 				],
-				"execution_count": 2
+				"execution_count": 22
 			}
 		]
 	}

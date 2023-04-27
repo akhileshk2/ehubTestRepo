@@ -1,13 +1,13 @@
 {
-	"name": "config",
+	"name": "configNB",
 	"properties": {
 		"folder": {
-			"name": "ce_pipelines/common"
+			"name": "AK W"
 		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"bigDataPool": {
-			"referenceName": "bmsparkpool22",
+			"referenceName": "bmapachespark",
 			"type": "BigDataPoolReference"
 		},
 		"sessionProperties": {
@@ -21,7 +21,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "e765198a-7118-404a-b32c-7dc58789d11a"
+				"spark.autotune.trackingId": "a727b904-a0cf-489f-8eac-fb780f44b3ef"
 			}
 		},
 		"metadata": {
@@ -38,10 +38,10 @@
 				"name": "python"
 			},
 			"a365ComputeOptions": {
-				"id": "/subscriptions/8e862a61-456c-49b5-9e16-45c00c15686b/resourceGroups/synapsepoc/providers/Microsoft.Synapse/workspaces/bmworkspace2022/bigDataPools/bmsparkpool22",
-				"name": "bmsparkpool22",
+				"id": "/subscriptions/8e862a61-456c-49b5-9e16-45c00c15686b/resourceGroups/synapsepoc/providers/Microsoft.Synapse/workspaces/bmworkspace2022/bigDataPools/bmapachespark",
+				"name": "bmapachespark",
 				"type": "Spark",
-				"endpoint": "https://bmworkspace2022.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool22",
+				"endpoint": "https://bmworkspace2022.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmapachespark",
 				"auth": {
 					"type": "AAD",
 					"authResource": "https://dev.azuresynapse.net",
@@ -61,29 +61,22 @@
 				"source": [
 					"config = {\r\n",
 					"\r\n",
-					"\r\n",
-					"    \"storage.account_name\":\"bmdatalakestorage\",\r\n",
-					"    \"storage.account_key\":\"sSTTJtQJBjS57p8b5dJTy8Rmp0gHeanZQbf02eZv9F9IHhLeM0ogGQVA02YjOmiuWEXjvxdMYLzj+ASt0WMY2Q==\",\r\n",
+					"    \"storage.account_name\":\"usedcolabedgeadl01\",\r\n",
+					"    \"storage.account_key\":\"5vSsYxnIg9DmEq65A+7iqRUHGXJ9/wKdDkbFetPucHd8sdlpp73pFjYG7RyNPvuEcxHDqGaiRMSvcbDT+c0Szw==\",\r\n",
 					"    \"storage.container_name\":\"test\",\r\n",
-					"    \"storage.lookup_dir\":\"data/lookup_data\",\r\n",
-					"    \"storage.temp_dir\":\"data/temp_data\",\r\n",
-					"\r\n",
-					"    \"keyvault.name\":\"bmkeyvault2022\",\r\n",
-					"    \"linkedservice.keyvaultls\":\"ls_bmehubkv2022\",\r\n",
+					"    \"storage.lookup_dir\":\"lookup_data\",\r\n",
 					"\r\n",
 					"    \"logging.table_name\":\"ETLlogging\",\r\n",
 					"\r\n",
-					"     \"neo4j.bolt_url\": \"bolt://44.207.7.92:7687\",\r\n",
+					"    \"neo4j.bolt_url\": \"bolt://localhost:7687\",\r\n",
 					"    \"neo4j.user_name\": \"neo4j\",\r\n",
-					"    \"neo4j.password\": \"magneto-hello-fog\",\r\n",
-					"    \"neo4j.database\": \"neo4j\",\r\n",
+					"    \"neo4j.password\": \"Adminneo@123\",\r\n",
+					"    \"neo4j.database\": \"eyprivatetesting\",\r\n",
 					"\r\n",
-					"    \"crunchbase_uri\": \"https://api.crunchbase.com/bulk/premium/v4/bulk_export.tar.gz?user_key=003b629a937369811e06cf5c1ae4aac3\"\r\n",
-					"}\r\n",
-					"\r\n",
-					""
+					"    \"crunchbase_uri\": \"http://static.crunchbase.com/data_crunchbase/bulk_export_sample.tar.gz\"\r\n",
+					"}"
 				],
-				"execution_count": 1
+				"execution_count": 20
 			}
 		]
 	}

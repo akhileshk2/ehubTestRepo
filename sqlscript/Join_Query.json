@@ -1,0 +1,17 @@
+{
+	"name": "Join_Query",
+	"properties": {
+		"content": {
+			"query": "\nSELECT\n    taxi_zone.Borough, count(1) as number_of_trips\nFROM\n    OPENROWSET(\n        BULK 'https://bmdatalakestorage.dfs.core.windows.net/bmfilestorage/part-00000-tid-3698814041981869206-843e1370-08e7-46bb-83a1-6d989835ae6e-164-1-c000.snappy.parquet',\n        FORMAT = 'PARQUET'\n    ) AS [Trip_Data]\n\n    JOIN\n\n    OPENROWSET(\n        BULK 'https://bmdatalakestorage.dfs.core.windows.net/bmfilestorage/taxi_zone.csv',\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0'\n        \n    ) \n    with(\n        LocationID int 1,\n        Borough varchar(50) 2,\n        Zone varchar(100) 3,\n        service_zone varchar(50) 4\n    ) as taxi_zone\n    ON Trip_Data.PULocationID=taxi_zone.LocationID\n    GROUP BY taxi_zone.Borough\n    order by  number_of_trips\n\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

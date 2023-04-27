@@ -1,0 +1,129 @@
+{
+	"name": "funding_rounds_extractor",
+	"properties": {
+		"folder": {
+			"name": "ce_pipelines/crunchbasse/extraction_operator/funding_rounds"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool22",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "5905b846-a7af-44ae-a041-67b712d1749d"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "python"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/8e862a61-456c-49b5-9e16-45c00c15686b/resourceGroups/synapsepoc/providers/Microsoft.Synapse/workspaces/bmworkspace2022/bigDataPools/bmsparkpool22",
+				"name": "bmsparkpool22",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2022.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool22",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.2",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd \r\n",
+					"from datetime import datetime,timedelta \r\n",
+					"from pyspark.sql.functions import collect_list\r\n",
+					"from pyspark.sql.functions import concat_ws\r\n",
+					"\r\n",
+					"class FundingRoundsDataExtractor:\r\n",
+					"\r\n",
+					"    entity = \"funding_rounds\"\r\n",
+					"    \r\n",
+					"    def __init__(self,config, logger):\r\n",
+					"        self._config = config\r\n",
+					"        self._logger = logger\r\n",
+					"        self.storagecontainername = mssparkutils.credentials.getSecret(self._config[\"keyvault.name\"],self._config[\"storage.container_name\"],self._config[\"linkedservice.keyvaultls\"])\r\n",
+					"        self.storageaccountname = mssparkutils.credentials.getSecret(self._config[\"keyvault.name\"],self._config[\"storage.account_name\"],self._config[\"linkedservice.keyvaultls\"])\r\n",
+					"        # self._data = {\r\n",
+					"        #    \"funding_rounds_inc\": pd.DataFrame()\r\n",
+					"        #}\r\n",
+					"\r\n",
+					"    # def _upload(self):\r\n",
+					"    #    for output_entity, df in self._data.items():\r\n",
+					"    #        if not df.empty:\r\n",
+					"    #            data = io.StringIO()\r\n",
+					"    #            df.to_csv(data, index=False)\r\n",
+					"    #           self._staging.upload_file(f'{output_entity}.csv', data, 'staging')\r\n",
+					"    #            data.close()\r\n",
+					"     \r\n",
+					"     def extract(self, dir_path:str, organizations=set()):\r\n",
+					"        \r\n",
+					"        from_date = self._config.get('start_date',(datetime.now()-timedelta(days=1)).strftime(self._config['datetime_format']))\r\n",
+					"        # to_date = self._config.get('end_date', None)\r\n",
+					"        #from_date = \"2019-03-29  23:34:32\"\r\n",
+					"        to_date =   \"2019-04-02  14:18:22\"\r\n",
+					"\r\n",
+					"        #file_path = \"abfss://ecosystemstore@eundinthlzdls02.dfs.core.windows.net/data/temp_data/476a69ef-f41c-49e4-aa8d-cf1a96a163d2/funding_rounds.csv\"\r\n",
+					"        file_path = dir_path+'/'+entity+'.csv'\r\n",
+					"\r\n",
+					"        cbsourceDF = spark.read\\\r\n",
+					"                .format(\"csv\")\\\r\n",
+					"                .option(\"header\",True)\\\r\n",
+					"                .option(\"path\",file_path)\\\r\n",
+					"                .load()\r\n",
+					"        if to_date:\r\n",
+					"            \r\n",
+					"            filteredDF = cbsourceDF.filter((cbsourceDF[\"updated_at\"] >= \"2019-03-29  23:34:32\") & (cbsourceDF[\"updated_at\"] <= \"2019-04-02  14:18:22\"))\r\n",
+					"        else:\r\n",
+					"            filteredDF = cbsourceDF.filter((cbsourceDF[\"updated_at\"] >= \"2019-03-29  23:34:32\")) | (data_chunk['org_uuid'].isin(organizations))])\r\n",
+					"        \r\n",
+					"        if filteredDF:\r\n",
+					"\r\n",
+					"            idslist = filteredDF.select('uuid').rdd.flatMap(lambda x: x).collect()\r\n",
+					"            \r\n",
+					"            idsset = set(idslist)\r\n",
+					"\r\n",
+					"        #staging_path = \"abfss://ecosystemstore@eundinthlzdls02.dfs.core.windows.net/data/staging/crunchbase\"\r\n",
+					"\r\n",
+					"        staging_path = 'abfss://'+self._storagecontainername+'@'+self._storageaccountname+'.dfs.core.windows.net/'+self._config[\"storage.staging_dir_name\"]\r\n",
+					"        \r\n",
+					"        funding_rounds_incDF.coalesce(1).write.format('csv')\\\r\n",
+					"                        .option('header',True)\\\r\n",
+					"                        .mode('overwrite')\\\r\n",
+					"                        .save(staging_path+\"/funding_rounds_inc\")\r\n",
+					"        self._logger.info(f'{len(idsset)} records extracted and staged from entity - {entity}')\r\n",
+					"        return idsset    "
+				]
+			}
+		]
+	}
+}

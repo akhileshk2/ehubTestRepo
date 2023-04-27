@@ -1,0 +1,282 @@
+{
+	"name": "crunchbase_run",
+	"properties": {
+		"folder": {
+			"name": "ce_pipelines/crunchbasse/extraction_operator"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "bmsparkpool22",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "fb7da349-944d-452c-ae72-3544a36e0f7e"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/8e862a61-456c-49b5-9e16-45c00c15686b/resourceGroups/synapsepoc/providers/Microsoft.Synapse/workspaces/bmworkspace2022/bigDataPools/bmsparkpool22",
+				"name": "bmsparkpool22",
+				"type": "Spark",
+				"endpoint": "https://bmworkspace2022.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/bmsparkpool22",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.2",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"pip install azure-storage-file-datalake"
+				],
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/common/datalake_connector"
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/crunchbase/config/crunchbase_config"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/crunchbase/config/crunchbase_logger_config"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/crunchbase/extraction_operator/source_downloader"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run ce_pipelines/crunchbase/extraction_operator/organizations/extractor"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import tempfile\r\n",
+					"import os\r\n",
+					"import shutil\r\n",
+					"import datetime\r\n",
+					"\r\n",
+					"# from ce_pipelines import DataLakeAdapter\r\n",
+					"# from ce_pipelines import ETLStatusRecorder\r\n",
+					"# from ce_pipelines.crunchbase import config, logger\r\n",
+					"# from ce_pipelines import ETLlogger\r\n",
+					"# from .source_downloader import DataDownloader \r\n",
+					"# from .organizations import OrganizationsDataExtractor\r\n",
+					"# from .funding_rounds import FundingRoundsDataExtractor\r\n",
+					"# from .investments import InvestmentsDataExtractor\r\n",
+					"# from .org_parents import OrgParentsDataExtractor\r\n",
+					"# from .acquisitions import AcquisitionsDataExtractor\r\n",
+					"# from .people import PeopleDataExtractor\r\n",
+					"# from .people_descriptions import PeopleDescriptionsDataExtractor\r\n",
+					"# from .degrees import DegreesDataExtractor\r\n",
+					"# from .jobs import JobsDataExtractor\r\n",
+					"\r\n",
+					"def execute(**kwargs):\r\n",
+					"    # Update Default Config - Optional\r\n",
+					"    config.update(kwargs)\r\n",
+					"\r\n",
+					"    #Last execution date\r\n",
+					"    \r\n",
+					"    #esr = ETLStatusRecorder(config, logger)\r\n",
+					"    #last_successfully_executed_at = esr.get_last_successful_execution_at()\r\n",
+					"\r\n",
+					"    last_successfully_executed_at = \"2023-09-02 13:35:06\"\r\n",
+					"\r\n",
+					"    if last_successfully_executed_at:\r\n",
+					"        config.update({'start_date': last_successfully_executed_at})\r\n",
+					"\r\n",
+					"    # Temp dir created for data download\r\n",
+					"    #dir_path = tempfile.mkdtemp()\r\n",
+					"    dir_path=\"abfss://test@bmdatalakestorage.dfs.core.windows.net/data/temp_data/476a69ef-f41c-49e4-aa8d-cf1a96a163d2\"\r\n",
+					"\r\n",
+					"    logger.info(f\"Temp dir created - {dir_path}\")\r\n",
+					"    \r\n",
+					"    # Initialize Staging Location\r\n",
+					"    staging = DataLakeAdapter(config=config, logger=logger, env='staging')\r\n",
+					"\r\n",
+					"    # Download Crunchbase daily data export\r\n",
+					"    #DataDownloader(config=config, logger=logger).download_data(dir_path)\r\n",
+					"    organizations = OrganizationsDataExtractor(staging, config=config, logger=logger).extract(dir_path)\r\n",
+					"    # funding_rounds = FundingRoundsDataExtractor(staging, config=config, logger=logger).extract(dir_path, organizations=organizations)\r\n",
+					"    # InvestmentsDataExtractor(staging, config=config, logger=logger).extract(dir_path, funding_rounds=funding_rounds)\r\n",
+					"    # OrgParentsDataExtractor(staging, config=config, logger=logger).extract(dir_path, organizations=organizations)\r\n",
+					"    # AcquisitionsDataExtractor(staging, config=config, logger=logger).extract(dir_path, organizations=organizations)\r\n",
+					"    \r\n",
+					"    # people = PeopleDataExtractor(staging, config=config, logger=logger).extract(dir_path)\r\n",
+					"    # PeopleDescriptionsDataExtractor(staging, config=config, logger=logger).extract(dir_path, people=people)\r\n",
+					"    # DegreesDataExtractor(staging, config=config, logger=logger).extract(dir_path, people=people)\r\n",
+					"    # JobsDataExtractor(staging, config=config, logger=logger).extract(dir_path, people=people)\r\n",
+					"    \r\n",
+					"    # Delete temp directory after incremental data staging\r\n",
+					"    shutil.rmtree(dir_path)\r\n",
+					"    logger.info(f\"Temp dir deleted - {dir_path}\")\r\n",
+					"\r\n",
+					"    # Update logs to Azure Table\r\n",
+					"    etl_logger = ETLlogger(_config=config)\r\n",
+					"    etl_logger.update_logs(task=\"Extraction\", result=\"Success\")\r\n",
+					"\r\n",
+					"if __name__ == \"__main__\":\r\n",
+					"    \r\n",
+					"    '''\r\n",
+					"    Optional Arguments:\r\n",
+					"    --------------------\r\n",
+					"    1. crunchbase_uri - crunchbase download uri\r\n",
+					"    2. entity_files - list of files to be extracted from crunchbase archive\r\n",
+					"    3. start_date - datetime(%Y-%m-%d %H:%M:%S) filter for records  \r\n",
+					"    4. end_date - datetime(%Y-%m-%d %H:%M:%S) filter for records\r\n",
+					"    '''\r\n",
+					"    \r\n",
+					"    execute(start_date=\"2017-01-01 00:00:00\", end_date=\"2020-03-30 00:00:00\")\r\n",
+					"\r\n",
+					"\r\n",
+					"def check_date_formats(dates_list):\r\n",
+					"\r\n",
+					"    if len(dates_list) < 2:\r\n",
+					"        raise ValueError(\"Start date and end date have to be declared!\")\r\n",
+					"\r\n",
+					"    date_format = config['datetime_format']\r\n",
+					"    \r\n",
+					"    for date_text in dates_list[:2]:\r\n",
+					"        try:\r\n",
+					"            datetime.datetime.strptime(date_text, date_format)\r\n",
+					"            print(\"Date {date_text} is ok\".format(date_text=date_text))\r\n",
+					"        except ValueError:\r\n",
+					"            raise ValueError(\"Incorrect date {date_text}, format should be {date_format}\"\r\n",
+					"                            .format(date_text=date_text, date_format=date_format))\r\n",
+					"    \r\n",
+					"    return { \"start_date\": dates_list[0], \"end_date\": dates_list[1] }\r\n",
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"execute()"
+				]
+			}
+		]
+	}
+}
